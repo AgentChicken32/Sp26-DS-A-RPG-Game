@@ -1,4 +1,58 @@
 #include <iostream>
+using namespace std;
+
+enum class GameState {
+	TesterMenu,
+	Inventory,
+	Battle,
+	Shop,
+	CharacterCreation,
+	Quit
+};
+
+GameState runMainMenu()
+{
+	GameState state = GameState::TesterMenu;
+
+	while (state != GameState::Quit) {
+		switch (state) {
+
+		case GameState::TesterMenu:
+            // TODO: implement TesterMenu
+			break;
+
+		case GameState::Inventory:
+			// TODO: implement inventory scene
+			break;
+
+		case GameState::Battle:
+			// TODO: implement battle scene
+			break;
+
+		case GameState::Shop:
+			// TODO: implement shop scene
+			break;
+
+		case GameState::CharacterCreation:
+			// TODO: implement character creation
+			break;
+
+		case GameState::Quit:
+			// exit loop
+			break;
+
+		default:
+			// safety net
+			state = GameState::Quit;
+			break;
+		}
+	}
+
+	return GameState::Quit;
+}
+
+/*
+#include <iostream>
 #include <string>
 using namespace std;
 
@@ -44,6 +98,14 @@ int main() {
         case GameState::TesterMenu:
             state = runTesterMenu();
             break;
+            //INSET 1
+        }
+    }
+    cout << "Exiting game...\n";
+    return 0;
+}
+*/
+//INSET 1
         /*case GameState::CharacterCreation:
             state = runCharacterCreation();
             break;
@@ -52,8 +114,3 @@ int main() {
             break;
         case GameState::Quit:
             break;*/
-        }
-    }
-    cout << "Exiting game...\n";
-    return 0;
-}
