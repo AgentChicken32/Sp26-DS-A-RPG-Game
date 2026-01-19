@@ -1,29 +1,32 @@
 #pragma once
 #include "SceneClass.h"
-
+#include <vector>
+#include <algorithm> // std::find
 
 class Battle : public Scene {
 protected:
-	//Members
+	// Members
 	std::vector<int/*placeholder type, will be of type character pointer*/> enemies;
 	std::vector<int/*placeholder type, will be of type character pointer*/> heroes;
 
 	std::vector<int/*placeholder type, will be of type character pointer*/> turnOrder;
 
-	int turnCounter = -1;//default to -1 to show it's the start of battle
+	int turnCounter = -1; // default to -1 to show it's the start of battle
 
 public:
-	//Methods
-
+	// Methods
 	Battle(std::vector<int/*character pointer*/> good, std::vector<int/*character pointer*/> evil);
 
-	void Setup() override; //sets up scene, and displays it
+	void Setup() override; // sets up scene, and displays it
 
-	void DecideTurnOrder();//runs once in constructor to determine character action order
+	// These two are required because Scene declares them pure virtual
+	void AccessInventory() override; 
+	void MenuOptions() override;
 
-	void PlayerTurn(int/*placeholder for character pointer*/ npc);//player turn to choose attacks
+	void DecideTurnOrder(); // runs once in constructor to determine character action order
 
-	void EnemyTurn(int/*placeholder for character pointer*/ npc);//enemy automatically decides what to do
+	void PlayerTurn(int/*placeholder for character pointer*/ npc); // player turn to choose attacks
+	void EnemyTurn(int/*placeholder for character pointer*/ npc);  // enemy automatically decides what to do
 
-	int CheckForWinLoss();//checks if either team is at 0 health; returns 0 if neither team is dead, returns 1 if enemies are dead, and returns 2 if heroes are dead
+	int CheckForWinLoss(); // 0 = ongoing, 1 = enemies dead, 2 = heroes dead
 };

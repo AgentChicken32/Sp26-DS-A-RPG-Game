@@ -1,91 +1,93 @@
 #include "BattleClass.h"
+#include <iostream>
 
 using namespace std;
 
-Battle::Battle(std::vector<int/*character pointer*/> good, std::vector<int/*character pointer*/> evil) {
+Battle::Battle(std::vector<int/*character pointer*/> good, std::vector<int/*character pointer*/> evil)
+	: Scene("Battle") // <-- required: Scene has no default constructor
+{
 	heroes = good;
 	enemies = evil;
-	//doesn't do anything yet, will input good and evil vectors to put into turn order vector
+
 	DecideTurnOrder();
 
-	//game starts
+	// game starts
 	Setup();
 }
 
-Battle::Setup() {
-	//check if it's the first turn; if it is display start message
+void Battle::Setup() {
+	// check if it's the first turn; if it is display start message
 	if (turnCounter == -1) {
 		cout << "Stand guard, enemies appeared!" << endl;
+		turnCounter = 0;
+	}
+
+	// MAIN BATTLE LOOP!!
+	while (CheckForWinLoss() == 0) {
+
+		// Determine whether current actor is an enemy or hero
+		int actor = turnOrder[turnCounter];
+
+		bool is_enemy = (std::find(enemies.begin(), enemies.end(), actor) != enemies.end());
+
+		if (is_enemy) {
+			EnemyTurn(actor);
+		} else {
+			PlayerTurn(actor);
+		}
+
+		// advance turn counter with wrap-around
 		turnCounter++;
+		if (turnCounter >= static_cast<int>(turnOrder.size())) {
+			turnCounter = 0;
+		}
 	}
 
-	//MAIN BATTLE LOOP!!
-	while (CheckForWinLoss == 0) {
-		//check whose turn it is
-		if (/*check if turn counter correlates to an enemy in the turn order vector */ ) {
-			EnemyTurn(turnOrder[turnCounter]);
-		}
-		else {//else its a player character
-			PlayerTurn(turnOrder[turnCounter]);
-		}
-		
-		//turn loop check
-		if (turnCounter == turnOrder.size()) {
-			turnCounter = 0
-		}
-		else {
-			turnCounter++
-		}
-	}
-	
-	//give winning or losing message
-	if (CheckForWinLoss == 1) {
-		//1 means enemies are dead
-		cout << "You win!"
-	}
-	else {
-		//2 means heroes are dead
-		cout << "You lose!"
+	// give winning or losing message
+	if (CheckForWinLoss() == 1) {
+		cout << "You win!" << endl;
+	} else {
+		cout << "You lose!" << endl;
 	}
 }
 
-Battle::DecideTurnOrder() {
-	//sort hero vector into turn order vector
+void Battle::DecideTurnOrder() {
+	// Minimal stub: heroes go first, then enemies.
+	turnOrder.clear();
+	turnOrder.insert(turnOrder.end(), heroes.begin(), heroes.end());
+	turnOrder.insert(turnOrder.end(), enemies.begin(), enemies.end());
 
-	//sort enemy vector into turn order vector
+	// If both are empty, prevent out-of-bounds access in Setup
+	if (turnOrder.empty()) {
+		turnCounter = 0;
+	}
 }
 
-Battle::PlayerTurn(int/*placeholder for character pointer*/ npc) {
-	//display which player character's turn it is
-
-	//give you menu options; Attack, Magic, Inventory, Run
-
-	//attack uses character strength stat to wack enemy
-	
-	//magic uses character wisdom stat to blast enemy
-
-	//inventory displays items character can use in battle
-
-	//run character attempts to escape
-
-	//end turn if use an item, attack, magic, or attempt to run
+void Battle::PlayerTurn(int/*placeholder for character pointer*/ npc) {
+	// stub
+	(void)npc;
+	// TODO: implement menu + actions
 }
 
-Battle::EnemyTurn(int/*placeholder for character pointer*/ npc) {
-	//decide target
-
-	//call enemy attack function
-
-	//display message
-
-	//end turn
+void Battle::EnemyTurn(int/*placeholder for character pointer*/ npc) {
+	// stub
+	(void)npc;
+	// TODO: implement AI action selection
 }
 
-Battle::CheckForWinLoss() {
-	//iterate through enemies and check if their total health is 0; if it is return 1
+int Battle::CheckForWinLoss() {
+	// TODO: health checks once "character pointer" is a real type
+	// For now, keep battle "ongoing" unless one side is empty.
 
-	//iterate through heroes and check if their total health is 0; if it is return 2
-
-	//if neither
+	if (enemies.empty()) return 1;
+	if (heroes.empty()) return 2;
 	return 0;
+}
+
+void Battle::AccessInventory() {
+	// stub (required by Scene)
+}
+
+void Battle::MenuOptions() {
+	// stub (required by Scene)
 }
