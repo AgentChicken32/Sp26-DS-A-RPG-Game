@@ -1,9 +1,9 @@
+#pragma once
 #include "BattleClass.h"
-#include <iostream>
 
 using namespace std;
 
-Battle::Battle(std::vector<int/*character pointer*/> good, std::vector<int/*character pointer*/> evil)
+Battle::Battle(std::vector<character*> good, std::vector<character*> evil)
 	: Scene("Battle") // <-- required: Scene has no default constructor
 {
 	heroes = good;
@@ -63,13 +63,13 @@ void Battle::DecideTurnOrder() {
 	}
 }
 
-void Battle::PlayerTurn(int/*placeholder for character pointer*/ npc) {
+void Battle::PlayerTurn(character* npc) {
 	// stub
 	(void)npc;
 	// TODO: implement menu + actions
 }
 
-void Battle::EnemyTurn(int/*placeholder for character pointer*/ npc) {
+void Battle::EnemyTurn(character* npc) {
 	// stub
 	(void)npc;
 	// TODO: implement AI action selection
