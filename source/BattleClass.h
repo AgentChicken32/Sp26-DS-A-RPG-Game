@@ -1,21 +1,22 @@
 #pragma once
 #include "SceneClass.h"
+#include "character.h"
 #include <vector>
 #include <algorithm> // std::find
 
 class Battle : public Scene {
 protected:
 	// Members
-	std::vector<int/*placeholder type, will be of type character pointer*/> enemies;
-	std::vector<int/*placeholder type, will be of type character pointer*/> heroes;
+	std::vector<character*> enemies;
+	std::vector<character*> heroes;
 
-	std::vector<int/*placeholder type, will be of type character pointer*/> turnOrder;
+	std::vector<character*> turnOrder;
 
 	int turnCounter = -1; // default to -1 to show it's the start of battle
 
 public:
 	// Methods
-	Battle(std::vector<int/*character pointer*/> good, std::vector<int/*character pointer*/> evil);
+	Battle(std::vector<character*> good, std::vector<character*> evil);
 
 	void Setup() override; // sets up scene, and displays it
 
@@ -25,8 +26,8 @@ public:
 
 	void DecideTurnOrder(); // runs once in constructor to determine character action order
 
-	void PlayerTurn(int/*placeholder for character pointer*/ npc); // player turn to choose attacks
-	void EnemyTurn(int/*placeholder for character pointer*/ npc);  // enemy automatically decides what to do
+	void PlayerTurn(character* npc); // player turn to choose attacks
+	void EnemyTurn(character* npc);  // enemy automatically decides what to do
 
 	int CheckForWinLoss(); // 0 = ongoing, 1 = enemies dead, 2 = heroes dead
 };
