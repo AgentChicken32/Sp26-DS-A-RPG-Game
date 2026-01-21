@@ -1,9 +1,8 @@
-#pragma once
 #include "BattleClass.h"
 
 using namespace std;
 
-Battle::Battle(std::vector<character*> good, std::vector<character*> evil)
+Battle::Battle(vector<character*> good, vector<character*> evil)
 	: Scene("Battle") // <-- required: Scene has no default constructor
 {
 	heroes = good;
@@ -49,13 +48,38 @@ void Battle::Setup() {
 	} else {
 		cout << "You lose!" << endl;
 	}
+
+	//Destroy Battle Scene
+	~Battle();
 }
 
 void Battle::DecideTurnOrder() {
 	// Minimal stub: heroes go first, then enemies.
 	turnOrder.clear();
-	turnOrder.insert(turnOrder.end(), heroes.begin(), heroes.end());
-	turnOrder.insert(turnOrder.end(), enemies.begin(), enemies.end());
+
+	//smush both groups into an unsorted vector
+	vector<character*> unsortedVec = enemies;
+	unsortedVec.insert(unsortedVec.end(), heroes);
+	
+	//sort unsorted vector
+	for (character npc : unsortedVec) {
+		//put first npc into turn order
+		if (turnOrder.empty() == true) { turnOrder.push_back(npc); }
+
+		//sort enemies into vector
+		for (int i = 0; i <= turnOrder.size(); i++) {
+			//check if current index is less than the npc that is being checked
+			if (turnOrder[i].get_stamina <= npc) {
+
+				//if it is lesser then we insert current npc into vector before the smaller one
+				turnOrder.insert(turnOrder.begin() + i, npc);
+			}
+			else if (i == turnOrder.size()) {
+				//if none are larger than the current npc insert at the end
+				turnOrder.insert(turnOrder.end(), npc);
+			}
+		}
+	}
 
 	// If both are empty, prevent out-of-bounds access in Setup
 	if (turnOrder.empty()) {
