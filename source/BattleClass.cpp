@@ -25,7 +25,7 @@ void Battle::Setup() {
 	while (CheckForWinLoss() == 0) {
 
 		// Determine whether current actor is an enemy or hero
-		int actor = turnOrder[turnCounter];
+		character* actor = turnOrder[turnCounter];
 
 		bool is_enemy = (std::find(enemies.begin(), enemies.end(), actor) != enemies.end());
 
@@ -50,7 +50,7 @@ void Battle::Setup() {
 	}
 
 	//Destroy Battle Scene
-	~Battle();
+	//~Battle();
 }
 
 void Battle::DecideTurnOrder() {
