@@ -1,4 +1,6 @@
 #include "BattleClass.h"
+#include "character.h"
+#include <vector>
 
 using namespace std;
 
@@ -59,17 +61,17 @@ void Battle::DecideTurnOrder() {
 
 	//smush both groups into an unsorted vector
 	vector<character*> unsortedVec = enemies;
-	unsortedVec.insert(unsortedVec.end(), heroes);
+	unsortedVec.insert(unsortedVec.end(), heroes.begin(), heroes.end());
 	
 	//sort unsorted vector
-	for (character npc : unsortedVec) {
+	for (character* npc : unsortedVec) {
 		//put first npc into turn order
 		if (turnOrder.empty() == true) { turnOrder.push_back(npc); }
 
 		//sort enemies into vector
 		for (int i = 0; i <= turnOrder.size(); i++) {
 			//check if current index is less than the npc that is being checked
-			if (turnOrder[i].get_stamina <= npc) {
+			if (turnOrder[i]->get_stamina() <= npc->get_stamina()) {
 
 				//if it is lesser then we insert current npc into vector before the smaller one
 				turnOrder.insert(turnOrder.begin() + i, npc);
