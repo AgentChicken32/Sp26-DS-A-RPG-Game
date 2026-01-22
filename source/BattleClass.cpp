@@ -93,6 +93,14 @@ void Battle::PlayerTurn(character* npc) {
 	// stub
 	(void)npc;
 	// TODO: implement menu + actions
+
+	//display whose turn it is and their current state
+	cout << "*-------------------------------------------------------*" << endl;
+	cout << "It is " << "[INSERT CHARACTER NAME HERE]" << "'s turn!" << endl;
+	cout << "Health: " << npc->get_health() << " Mana: " << npc->get_mana() << endl;
+
+	//call menu options
+	MenuOptions();
 }
 
 void Battle::EnemyTurn(character* npc) {
@@ -115,5 +123,52 @@ void Battle::AccessInventory() {
 }
 
 void Battle::MenuOptions() {
-	// stub (required by Scene)
+
+	//variables
+	int input = 0;
+	bool loop = false;
+
+	//do while loop that will loop if told to
+	do{
+	
+		//output text and menu options
+		cout << R"(
+*-------------------------------------------------------*
+Choose an action!
+1. ATTACK	2. MAGIC	3. ITEMS	4. ESCAPE
+)" << endl;
+
+		//take input from user
+		cin >> input;
+
+		//switch case for menu options
+		switch (input) {
+		case 1:
+			//run attack
+
+			break;
+		case 2:
+			//run magic
+
+			break;
+		case 3:
+			//open item menu
+			AccessInventory();
+
+			break;
+		case 4:
+			//try to escape battle
+			cout << R"(
+*-------------------------------------------------------*
+You tried to run away, but it failed!
+)" << endl;
+
+			loop = true;
+			break;
+		default:
+			//loop
+			loop = true;
+		}
+
+	} while (loop);
 }
