@@ -1,54 +1,131 @@
 #include "character.h"
 
-// character constructor
-character::character(int health, int mana, int stamina, int gold)
-    : health(health), mana(mana), stamina(stamina), gold(gold) {}
-
-// virtual destructor
-character::~character() {}
-
-// getters
-int character::get_health() const {
-    return health;
+Character::Character(std::string name, Stats stats)
+    : m_name(std::move(name)), m_stats(stats) {
+    clamp_all();
 }
 
-int character::get_mana() const {
-    return mana;
+const std::string& Character::get_name() const { return m_name; }
+void Character::set_name(const std::string& name) { m_name = name; }
+
+const Character::Stats& Character::get_stats() const { return m_stats; }
+
+int Character::get_health() const { return m_stats.health; }
+int Character::get_mana() const { return m_stats.mana; }
+int Character::get_stamina() const { return m_stats.stamina; }
+int Character::get_gold() const { return m_stats.gold; }
+
+int Character::get_max_health() const { return m_stats.max_health; }
+int Character::get_max_mana() const { return m_stats.max_mana; }
+int Character::get_max_stamina() const { return m_stats.max_stamina; }
+
+bool Character::is_alive() const { return m_stats.health > 0; }
+
+void Character::take_damage(int amount) {
+    if (amount <= 0) return;
+    m_stats.health = std::max(0, m_stats.health - amount);
 }
 
-int character::get_stamina() const {
-    return stamina;
+void Character::heal(int amount) {
+    if (amount <= 0) return;
+    m_stats.health = std::min(m_stats.max_health, m_stats.health + amount);
 }
 
-int character::get_gold() const {
-    return gold;
+bool Character::spend_mana(int amount) {
+    if (amount <= 0) return true;
+    if (m_stats.mana < amount) return false;
+    m_stats.mana -= amount;
+    return true;
 }
 
-// setters
-void character::set_health(int value) {
-    health = value;
+void Character::restore_mana(int amount) {
+    if (amount <= 0) return;
+    m_stats.mana = std::min(m_stats.max_mana, m_stats.mana + amount);
 }
 
-void character::set_mana(int value) {
-    mana = value;
+bool Character::spend_stamina(int amount) {
+    if (amount <= 0) return true;
+    if (m_stats.stamina < amount) return false;
+    m_stats.stamina -= amount;
+    return true;
 }
 
-void character::set_stamina(int value) {
-    stamina = value;
+void Character::restore_stamina(int amount) {
+    if (amount <= 0) return;
+    m_stats.stamina = std::min(m_stats.max_stamina, m_stats.stamina + amount);
 }
 
-void character::set_gold(int value) {
-    gold = value;
+bool Character::spend_gold(int amount) {
+    if (amount <= 0) return true;
+    if (m_stats.gold < amount) return false;
+    m_stats.gold -= amount;
+    return true;
 }
 
-// player
-player::player()
-    : character(120, 80, 70, 100) {}
+void Character::add_gold(int amount) {
+    if (amount <= 0) return;
+    m_stats.gold += amount;
+}
 
-// enemy
-enemy::enemy(int level)
-    : character(50 + level * 10, 20, 40, 10) {}
+void Character::clamp_all() {
+    m_stats.max_health  = std::max(0, m_stats.max_health);
+    m_stats.max_mana    = std::max(0, m_stats.max_mana);
+    m_stats.max_stamina = std::max(0, m_stats.max_stamina);
 
-// npc
-npc::npc()
-    : character(100, 0, 50, 25) {}
+    m_stats.health =
+        std::max(0, std::min(m_stats.health, m_stats.max_health));
+    m_stats.mana =
+        std::max(0, std::min(m_stats.mana, m_stats.max_mana));
+    m_stats.stamina =
+        std::max(0, std::min(m_stats.stamina, m_stats.max_stamina));
+
+    m_stats.gold = std::max(0, m_stats.gold);
+}
+
+// --------------------- Player ---------------------
+
+Player::Player(const std::string& name)
+    : Character(
+          name,
+          Character::Stats{
+              .max_health  = 125,
+              .health      = 125,
+              .max_mana    = 50,
+              .mana        = 50,
+              .max_stamina = 80,
+              .stamina     = 80,
+              .gold        = 25
+          }) {}
+
+// --------------------- Enemy ---------------------
+
+Enemy::Enemy(int level, const std::string& name)
+    : Character(
+          name,
+          Character::Stats{
+              .max_health  = std::max(1, 50 + (level * 20)),
+              .health      = std::max(1, 50 + (level * 20)),
+              .max_mana    = 0,
+              .mana        = 0,
+              .max_stamina = 30,
+              .stamina     = 30,
+              .gold        = 0
+          }),
+      m_level(std::max(1, level)) {}
+
+int Enemy::get_level() const {return m_level;}
+
+// --------------------- NPC ---------------------
+
+NPC::NPC(const std::string& name)
+    : Character(
+          name,
+          Character::Stats{
+              .max_health  = 100,
+              .health      = 100,
+              .max_mana    = 0,
+              .mana        = 0,
+              .max_stamina = 0,
+              .stamina     = 0,
+              .gold        = 0
+          }) {}
