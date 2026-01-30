@@ -7,16 +7,16 @@
 class Battle : public Scene {
 protected:
 	// Members
-	std::vector<character*> enemies;
-	std::vector<character*> heroes;
+	std::vector<Character*> enemies;
+	std::vector<Character*> heroes;
 
-	std::vector<character*> turnOrder;
+	std::vector<Character*> turnOrder;
 
 	int turnCounter = -1; // default to -1 to show it's the start of battle
 
 public:
 	// Methods
-	Battle(std::vector<character*> good, std::vector<character*> evil);
+	Battle(std::vector<Character*> good, std::vector<Character*> evil);
 
 	void Setup() override; // sets up scene, and displays it
 
@@ -26,8 +26,8 @@ public:
 
 	void DecideTurnOrder(); // runs once in constructor to determine character action order
 
-	void PlayerTurn(character* npc); // player turn to choose attacks
-	void EnemyTurn(character* npc);  // enemy automatically decides what to do
+	void PlayerTurn(Character* npc); // player turn to choose attacks
+	void EnemyTurn(Character* npc);  // enemy automatically decides what to do
 
 	int CheckForWinLoss(); // 0 = ongoing, 1 = enemies dead, 2 = heroes dead
 };
