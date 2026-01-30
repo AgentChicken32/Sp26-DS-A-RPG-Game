@@ -88,13 +88,13 @@ Player::Player(const std::string& name)
     : Character(
           name,
           Character::Stats{
-              .max_health  = 125,
-              .health      = 125,
-              .max_mana    = 50,
-              .mana        = 50,
-              .max_stamina = 80,
-              .stamina     = 80,
-              .gold        = 25
+              /*max_health*/ 125,
+              /*health*/ 125,
+              /*max_mana*/ 50,
+              /*mana*/ 50,
+              /*max_stamina*/ 80,
+              /*stamina*/ 80,
+              /*gold*/ 25
           }) {}
 
 // --------------------- Enemy ---------------------
@@ -103,13 +103,13 @@ Enemy::Enemy(int level, const std::string& name)
     : Character(
           name,
           Character::Stats{
-              .max_health  = std::max(1, 50 + (level * 20)),
-              .health      = std::max(1, 50 + (level * 20)),
-              .max_mana    = 0,
-              .mana        = 0,
-              .max_stamina = 30,
-              .stamina     = 30,
-              .gold        = 0
+            /*max_health*/ std::max(1, 50 + (level * 20)),
+            /*health*/ std::max(1, 50 + (level * 20)),
+            /*max_mana*/ 0,
+            /*mana*/ 0,
+            /*max_stamina*/ 30,
+            /*stamina*/ 30,
+            /*gold*/ 0
           }),
       m_level(std::max(1, level)) {}
 
@@ -121,11 +121,11 @@ NPC::NPC(const std::string& name)
     : Character(
           name,
           Character::Stats{
-              .max_health  = 100,
-              .health      = 100,
-              .max_mana    = 0,
-              .mana        = 0,
-              .max_stamina = 0,
-              .stamina     = 0,
-              .gold        = 0
+              /*max_health*/ 100,
+              /*health*/ 100,
+              /*max_mana*/ 0,
+              /*mana*/ 0,
+              /*max_stamina*/ 0,
+              /*stamina*/ 0,
+              /*gold*/ 0
           }) {}
