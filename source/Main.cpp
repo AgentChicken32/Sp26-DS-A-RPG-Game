@@ -4,10 +4,6 @@
 
 #include "character.h"
 
-// Compatibility alias: BattleClass.* currently uses `Character*` (lowercase),
-// while Character.h defines `Character`.
-using Character = Character;
-
 #include "BattleClass.h"
 
 // Reads an int choice safely (clears bad input).
