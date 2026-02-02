@@ -4,7 +4,7 @@
 
 using namespace std;
 
-Battle::Battle(vector<character*> good, vector<character*> evil)
+Battle::Battle(vector<Character*> good, vector<Character*> evil)
 	: Scene("Battle") // <-- required: Scene has no default constructor
 {
 	heroes = good;
@@ -27,7 +27,7 @@ void Battle::Setup() {
 	while (CheckForWinLoss() == 0) {
 
 		// Determine whether current actor is an enemy or hero
-		character* actor = turnOrder[turnCounter];
+		Character* actor = turnOrder[turnCounter];
 
 		bool is_enemy = (std::find(enemies.begin(), enemies.end(), actor) != enemies.end());
 
@@ -60,11 +60,11 @@ void Battle::DecideTurnOrder() {
 	turnOrder.clear();
 
 	//smush both groups into an unsorted vector
-	vector<character*> unsortedVec = enemies;
+	vector<Character*> unsortedVec = enemies;
 	unsortedVec.insert(unsortedVec.end(), heroes.begin(), heroes.end());
 	
 	//sort unsorted vector
-	for (character* npc : unsortedVec) {
+	for (Character* npc : unsortedVec) {
 		//put first npc into turn order
 		if (turnOrder.empty() == true) { turnOrder.push_back(npc); }
 
@@ -89,28 +89,28 @@ void Battle::DecideTurnOrder() {
 	}
 }
 
-void Battle::PlayerTurn(character* npc) {
+void Battle::PlayerTurn(Character* npc) {
 	// stub
 	(void)npc;
 	// TODO: implement menu + actions
 
 	//display whose turn it is and their current state
 	cout << "*-------------------------------------------------------*" << endl;
-	cout << "It is " << "[INSERT CHARACTER NAME HERE]" << "'s turn!" << endl;
+	cout << "It is " << "[INSERT Character NAME HERE]" << "'s turn!" << endl;
 	cout << "Health: " << npc->get_health() << " Mana: " << npc->get_mana() << endl;
 
 	//call menu options
 	MenuOptions();
 }
 
-void Battle::EnemyTurn(character* npc) {
+void Battle::EnemyTurn(Character* npc) {
 	// stub
 	(void)npc;
 	// TODO: implement AI action selection
 }
 
 int Battle::CheckForWinLoss() {
-	// TODO: health checks once "character pointer" is a real type
+	// TODO: health checks once "Character pointer" is a real type
 	// For now, keep battle "ongoing" unless one side is empty.
 
 	if (enemies.empty()) return 1;
