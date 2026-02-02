@@ -1,8 +1,109 @@
 #include "BattleClass.h"
 #include "character.h"
 #include <vector>
+#include <random>
 
 using namespace std;
+
+//placeholder functions
+
+//Basic Implimentation of a player attack function
+void Battle::BasicPlayerAttack(Character* npc) {
+	//variables
+	int input = 0;
+	bool loop = false;
+
+	//do while loop to loop if input is invalid
+	do {
+		loop = false;
+
+		cout << "*-------------------------------------------------------*" << endl;
+		cout << "Who do you want to wack?" << endl;
+
+		//output enemy names, health, and numbers
+		for (int counter = 1; counter <= (enemies.size() + 1); counter++) {
+			if (counter <= enemies.size()) {
+				cout << counter << ". " << enemies[counter - 1]->get_name() << "[HP:" << enemies[counter - 1]->get_health() << "] ";
+			}
+			else {
+				cout << counter << ". BACK" << endl;
+			}
+		}
+
+		//take input from user
+		cin >> input;
+
+		if (input <= enemies.size() && input > 0) {
+
+			if (enemies[input - 1]->get_health() != 0) {
+				enemies[input - 1]->take_damage(20);
+				cout << "*-------------------------------------------------------*" << endl;
+				cout << "You hit " << enemies[input - 1]->get_name() << "!\nIt took 30 damage!" << endl;
+			}
+			else {
+				loop = true;
+			}
+		}
+		else {
+			loop = true;
+		}
+
+
+	} while (loop);
+}
+
+//Basic Implimentation of player magic function
+void Battle::BasicPlayerMagic(Character* npc) {
+	//variables
+	int input = 0;
+	bool loop = false;
+
+	//do while loop to loop if input is invalid
+	do {
+		loop = false;
+
+		cout << "*-------------------------------------------------------*" << endl;
+		cout << "Who do you want to blast with a fireball?" << endl;
+
+		//output enemy names, health, and numbers
+		for (int counter = 1; counter <= (enemies.size() + 1); counter++) {
+			if (counter <= enemies.size()) {
+				cout << counter << ". " << enemies[counter - 1]->get_name() << "[HP:" << enemies[counter - 1]->get_health() << "] ";
+			}
+			else {
+				cout << counter << ". BACK" << endl;
+			}
+		}
+
+		//take input from user
+		cin >> input;
+
+		//input if statement
+		if (input <= enemies.size() && input > 0) {
+
+			//check if enemy selected is dead or not
+			if (enemies[input - 1]->get_health() != 0) {
+				//if the enemy isnt dead, it takes 30 damage
+				enemies[input - 1]->take_damage(30);
+				//player spends mana
+				npc->spend_mana(10);
+				//output results
+				cout << "*-------------------------------------------------------*" << endl;
+				cout << "You hit " << enemies[input - 1]->get_name() << "!\nIt took 30 damage!"<< endl;
+			}
+			else {
+				//if the enemy is dead loop
+				loop = true;
+			}
+		}
+		else {
+			loop = true;
+		}
+
+
+	} while (loop);
+}
+
 
 Battle::Battle(vector<Character*> good, vector<Character*> evil)
 	: Scene("Battle") // <-- required: Scene has no default constructor
@@ -96,41 +197,16 @@ void Battle::PlayerTurn(Character* npc) {
 
 	//display whose turn it is and their current state
 	cout << "*-------------------------------------------------------*" << endl;
-	cout << "It is " << "[INSERT Character NAME HERE]" << "'s turn!" << endl;
+	cout << "It is " << "[INSERT CHARACTER NAME HERE]" << "'s turn!" << endl;
 	cout << "Health: " << npc->get_health() << " Mana: " << npc->get_mana() << endl;
-
-	//call menu options
-	MenuOptions();
-}
-
-void Battle::EnemyTurn(Character* npc) {
-	// stub
-	(void)npc;
-	// TODO: implement AI action selection
-}
-
-int Battle::CheckForWinLoss() {
-	// TODO: health checks once "Character pointer" is a real type
-	// For now, keep battle "ongoing" unless one side is empty.
-
-	if (enemies.empty()) return 1;
-	if (heroes.empty()) return 2;
-	return 0;
-}
-
-void Battle::AccessInventory() {
-	// stub (required by Scene)
-}
-
-void Battle::MenuOptions() {
 
 	//variables
 	int input = 0;
 	bool loop = false;
 
 	//do while loop that will loop if told to
-	do{
-	
+	do {
+
 		//output text and menu options
 		cout << R"(
 *-------------------------------------------------------*
@@ -145,16 +221,16 @@ Choose an action!
 		switch (input) {
 		case 1:
 			//run attack
-
+			BasicPlayerAttack(npc);
 			break;
 		case 2:
 			//run magic
-
+			BasicPlayerMagic(npc);
 			break;
 		case 3:
 			//open item menu
 			AccessInventory();
-
+			loop = true;
 			break;
 		case 4:
 			//try to escape battle
@@ -171,4 +247,58 @@ You tried to run away, but it failed!
 		}
 
 	} while (loop);
+}
+
+void Battle::EnemyTurn(Character* npc) {
+	// stub
+	(void)npc;
+	// TODO: implement AI action selection
+
+	//choose which character the monster will hit
+	random_device rand;
+	mt19937 gen(rand());
+	uniform_int_distribution<> choose(1, heroes.size());
+	uniform_int_distribution<> damage(20, 30);
+
+	//random number
+	int randNum = choose(gen);
+
+	bool loop = false;
+	do {
+		//deal damage
+		if (heroes[randNum]->get_health() != 0) {
+			heroes[randNum]->take_damage(damage(gen));
+		}
+		else {
+			randNum = choose(gen);
+			loop = true;
+		}
+
+	} while (loop);
+
+	//output results
+	cout << "*-------------------------------------------------------*" << endl;
+	cout << npc->get_name() << " wacked " << heroes[randNum]->get_name() << "!" << endl;
+	cout << heroes[randNum]->get_name() << " has " << heroes[randNum]->get_health() << " health left!" << endl;
+}
+
+int Battle::CheckForWinLoss() {
+	// TODO: health checks once "character pointer" is a real type
+	// For now, keep battle "ongoing" unless one side is empty.
+
+	if (enemies.empty()) return 1;
+	if (heroes.empty()) return 2;
+	return 0;
+}
+
+void Battle::AccessInventory() {
+	// stub (required by Scene)
+	cout << "*-------------------------------------------------------*" << endl;
+	cout << "There is nothing in your bag..." << endl;
+}
+
+//dumb virtual function, need arguments >:(
+void Battle::MenuOptions() {
+
+	return;
 }
