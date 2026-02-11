@@ -30,6 +30,6 @@ public:
 	void EnemyTurn(Character* npc);  // enemy automatically decides what to do
 
 	int CheckForWinLoss(); // 0 = ongoing, 1 = enemies dead, 2 = heroes dead
-	void BasicPlayerAttack(Character* npc); 
-	void BasicPlayerMagic(Character* npc);
+	bool BasicPlayerAttack(Character* npc); 
+	bool BasicPlayerMagic(Character* npc);
 };
