@@ -14,6 +14,7 @@ int Character::get_health() const { return m_stats.health; }
 int Character::get_mana() const { return m_stats.mana; }
 int Character::get_stamina() const { return m_stats.stamina; }
 int Character::get_gold() const { return m_stats.gold; }
+int Character::get_attack() const { return m_stats.attack; }
 
 int Character::get_max_health() const { return m_stats.max_health; }
 int Character::get_max_mana() const { return m_stats.max_mana; }
@@ -67,6 +68,10 @@ void Character::add_gold(int amount) {
     m_stats.gold += amount;
 }
 
+void Character::set_attack(int value) {
+    m_stats.attack = std::max(0, value);
+}
+
 void Character::clamp_all() {
     m_stats.max_health  = std::max(0, m_stats.max_health);
     m_stats.max_mana    = std::max(0, m_stats.max_mana);
@@ -79,6 +84,7 @@ void Character::clamp_all() {
     m_stats.stamina =
         std::max(0, std::min(m_stats.stamina, m_stats.max_stamina));
 
+    m_stats.attack = std::max(0, m_stats.attack);
     m_stats.gold = std::max(0, m_stats.gold);
 }
 

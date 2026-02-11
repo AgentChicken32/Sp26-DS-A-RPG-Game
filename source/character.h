@@ -12,6 +12,7 @@ public:
         int mana         = 0;
         int max_stamina  = 0;
         int stamina      = 0;
+        int attack       = 0;
         int gold         = 0;
     };
 
@@ -29,6 +30,7 @@ public:
     int  get_mana() const;
     int  get_stamina() const;
     int  get_gold() const;
+    int  get_attack() const;
 
     int  get_max_health() const;
     int  get_max_mana() const;
@@ -48,6 +50,8 @@ public:
 
     bool spend_gold(int amount);
     void add_gold(int amount);
+
+    void set_attack(int value);
 
 protected:
     void clamp_all();
