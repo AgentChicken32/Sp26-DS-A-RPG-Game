@@ -1,10 +1,14 @@
 #pragma once
 
+#include <iostream>
 #include <string>
 #include <algorithm>
+#include <random>
 
 class Character {
 public:
+
+    //Members
     struct Stats {
         int max_health   = 0;
         int health       = 0;
@@ -14,6 +18,7 @@ public:
         int stamina      = 0;
         int attack       = 0;
         int gold         = 0;
+        int statusCondition = 0; //Default is 0 (Normal), 1 is Poisoned, 2 is Burning etc
     };
 
     Character(std::string name, Stats stats);
@@ -52,6 +57,10 @@ public:
     void add_gold(int amount);
 
     void set_attack(int value);
+
+    //How to use: status 0 is normal, 1 is poisoned, 2 is burning etc
+    //chanceOf decides what the chance of contracting the status is other than normal, so an input of 1 is 100%, 5 is 20%, 25 is 4%, etc.
+    void status_handler(int status, int chanceOf);
 
 protected:
     void clamp_all();

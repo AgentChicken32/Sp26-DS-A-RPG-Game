@@ -10,7 +10,7 @@ using namespace std;
 
 // ------------------------------------------------------------
 // Basic Implementation of a player attack function
-void Battle::BasicPlayerAttack(Character* npc) {
+bool Battle::BasicPlayerAttack(Character* npc) {
     int input = 0;
     bool loop = false;
 
@@ -35,7 +35,7 @@ void Battle::BasicPlayerAttack(Character* npc) {
 
         // BACK
         if (input == static_cast<int>(enemies.size()) + 1) {
-            return; // go back to PlayerTurn menu
+            return true; // go back to PlayerTurn menu
         }
 
         // Invalid range
@@ -65,13 +65,14 @@ void Battle::BasicPlayerAttack(Character* npc) {
         if (!target->is_alive()) {
             cout << target->get_name() << " is defeated!\n";
         }
+        return false;
 
     } while (loop);
 }
 
 // ------------------------------------------------------------
 // Basic Implementation of player magic function
-void Battle::BasicPlayerMagic(Character* npc) {
+bool Battle::BasicPlayerMagic(Character* npc) {
     int input = 0;
     bool loop = false;
 
@@ -83,7 +84,7 @@ void Battle::BasicPlayerMagic(Character* npc) {
 
         for (int i = 0; i < static_cast<int>(enemies.size()); i++) {
             cout << (i + 1) << ". " << enemies[i]->get_name()
-                 << "[HP:" << enemies[i]->get_health() << "] ";
+                << "[HP:" << enemies[i]->get_health() << "] ";
         }
         cout << (enemies.size() + 1) << ". BACK\n";
 
@@ -91,7 +92,7 @@ void Battle::BasicPlayerMagic(Character* npc) {
 
         // BACK
         if (input == static_cast<int>(enemies.size()) + 1) {
-            return;
+            return true;
         }
 
         // Invalid range
@@ -113,24 +114,27 @@ void Battle::BasicPlayerMagic(Character* npc) {
         }
 
         // Optional: mana check (if you want it)
-        // if (npc->get_mana() < 10) {
-        //     cout << "*-------------------------------------------------------*\n";
-        //     cout << "Not enough mana!\n";
-        //     loop = true;
-        //     continue;
-        // }
-
-        target->take_damage(30);
-        npc->spend_mana(10);
-
-        cout << "*-------------------------------------------------------*\n";
-        cout << "You hit " << target->get_name() << " with a fireball!\n";
-        cout << "It took 30 damage!\n";
-
-        if (!target->is_alive()) {
-            cout << target->get_name() << " is defeated!\n";
+        if (npc->get_mana() < 10) {
+            cout << "*-------------------------------------------------------*\n";
+            cout << "Not enough mana!\n";
+            loop = true;
+           continue;
         }
+        else {
 
+            target->take_damage(30);
+            npc->spend_mana(10);
+
+            cout << "*-------------------------------------------------------*\n";
+            cout << "You hit " << target->get_name() << " with a fireball!\n";
+            target->status_handler(2, 5);
+            cout << "It took 30 damage!\n";
+
+            if (!target->is_alive()) {
+                cout << target->get_name() << " is defeated!\n";
+            }
+            return false;
+        }
     } while (loop);
 }
 
@@ -198,8 +202,12 @@ void Battle::DecideTurnOrder() {
 }
 
 void Battle::PlayerTurn(Character* npc) {
+    //recover a little mana!
+    npc->restore_mana(5);
+
     cout << "*-------------------------------------------------------*\n";
     cout << "It is " << npc->get_name() << "'s turn!\n";
+    npc->status_handler(0, 0);
     cout << "Health: " << npc->get_health()
          << " Mana: " << npc->get_mana()
          << " Attack Bonus: " << npc->get_attack() << "\n";
@@ -220,10 +228,10 @@ Choose an action!
 
         switch (input) {
         case 1:
-            BasicPlayerAttack(npc);
+            loop = BasicPlayerAttack(npc);
             break;
         case 2:
-            BasicPlayerMagic(npc);
+            loop = BasicPlayerMagic(npc);
             break;
         case 3:
             AccessInventory();
@@ -265,7 +273,9 @@ void Battle::EnemyTurn(Character* npc) {
     heroes[idx]->take_damage(dmg);
 
     cout << "*-------------------------------------------------------*\n";
+    npc->status_handler(0, 0);
     cout << npc->get_name() << " wacked " << heroes[idx]->get_name() << "!\n";
+    heroes[idx]->status_handler(1, 4);
     cout << heroes[idx]->get_name() << " has " << heroes[idx]->get_health() << " health left!\n";
 }
 
