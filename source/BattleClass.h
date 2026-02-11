@@ -24,7 +24,7 @@ public:
 	void AccessInventory() override; 
 	void MenuOptions() override;
 
-	void DecideTurnOrder(); // runs once in constructor to determine character action order
+	void DecideTurnOrder(); // runs once in constructor to determine Character action order
 
 	void PlayerTurn(Character* npc); // player turn to choose attacks
 	void EnemyTurn(Character* npc);  // enemy automatically decides what to do
