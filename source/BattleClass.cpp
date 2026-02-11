@@ -14,6 +14,10 @@ void Battle::BasicPlayerAttack(Character* npc) {
     int input = 0;
     bool loop = false;
 
+    const int base_damage = 20;
+    const int bonus_damage = std::max(0, npc->get_attack());
+    const int total_damage = base_damage + bonus_damage;
+
     do {
         loop = false;
 
@@ -53,10 +57,10 @@ void Battle::BasicPlayerAttack(Character* npc) {
         }
 
         // Attack
-        target->take_damage(20);
+        target->take_damage(total_damage);
         cout << "*-------------------------------------------------------*\n";
         cout << "You hit " << target->get_name() << "!\n";
-        cout << "It took 20 damage!\n";
+        cout << "It took " << total_damage << " damage!\n";
 
         if (!target->is_alive()) {
             cout << target->get_name() << " is defeated!\n";
@@ -196,7 +200,9 @@ void Battle::DecideTurnOrder() {
 void Battle::PlayerTurn(Character* npc) {
     cout << "*-------------------------------------------------------*\n";
     cout << "It is " << npc->get_name() << "'s turn!\n";
-    cout << "Health: " << npc->get_health() << " Mana: " << npc->get_mana() << "\n";
+    cout << "Health: " << npc->get_health()
+         << " Mana: " << npc->get_mana()
+         << " Attack Bonus: " << npc->get_attack() << "\n";
 
     int input = 0;
     bool loop = false;
@@ -293,7 +299,8 @@ int Battle::CheckForWinLoss() {
 
 void Battle::AccessInventory() {
     cout << "*-------------------------------------------------------*\n";
-    cout << "There is nothing in your bag...\n";
+    cout << "Inventory access is disabled in battle.\n";
+    cout << "Use the Manage Inventory menu outside of combat.\n";
 }
 
 void Battle::MenuOptions() {
