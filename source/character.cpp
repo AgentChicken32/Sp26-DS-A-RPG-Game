@@ -255,8 +255,7 @@ Player::Player(const std::string& name)
               .mana = 50,
               .max_stamina = 80,
               .stamina = 80,
-              .gold = 25,
-              .actions = {0, 0, 0, 0}
+              .gold = 25
           }) {}
 
 // --------------------- Enemy ---------------------

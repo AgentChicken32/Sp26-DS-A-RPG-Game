@@ -110,5 +110,4 @@ private:
 class NPC : public Character {
 public:
     explicit NPC(const std::string& name = "NPC");
-
 };
