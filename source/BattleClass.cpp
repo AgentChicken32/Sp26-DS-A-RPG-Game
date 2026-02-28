@@ -10,15 +10,19 @@ using namespace std;
 
 // ------------------------------------------------------------
 // Basic Implementation of a player attack function
-void Battle::BasicPlayerAttack(Character* npc) {
+bool Battle::BasicPlayerAttack(Character* npc) {
     int input = 0;
     bool loop = false;
+
+    const int base_damage = 20;
+    const int bonus_damage = std::max(0, npc->get_attack());
+    const int total_damage = base_damage + bonus_damage;
 
     do {
         loop = false;
 
         cout << "*-------------------------------------------------------*\n";
-        cout << "Who do you want to wack?\n";
+        cout << "Who do you want to whack?\n";
 
         // Print enemies + BACK
         for (int i = 0; i < static_cast<int>(enemies.size()); i++) {
@@ -31,7 +35,8 @@ void Battle::BasicPlayerAttack(Character* npc) {
 
         // BACK
         if (input == static_cast<int>(enemies.size()) + 1) {
-            return; // go back to PlayerTurn menu
+            PlayerMenu(npc);
+            return true; // go back to PlayerTurn menu
         }
 
         // Invalid range
@@ -53,21 +58,22 @@ void Battle::BasicPlayerAttack(Character* npc) {
         }
 
         // Attack
-        target->take_damage(20);
+        target->take_damage(total_damage);
         cout << "*-------------------------------------------------------*\n";
         cout << "You hit " << target->get_name() << "!\n";
-        cout << "It took 20 damage!\n";
+        cout << "It took " << total_damage << " damage!\n";
 
         if (!target->is_alive()) {
             cout << target->get_name() << " is defeated!\n";
         }
+        return false;
 
     } while (loop);
 }
 
 // ------------------------------------------------------------
 // Basic Implementation of player magic function
-void Battle::BasicPlayerMagic(Character* npc) {
+bool Battle::BasicPlayerMagic(Character* npc) {
     int input = 0;
     bool loop = false;
 
@@ -79,7 +85,7 @@ void Battle::BasicPlayerMagic(Character* npc) {
 
         for (int i = 0; i < static_cast<int>(enemies.size()); i++) {
             cout << (i + 1) << ". " << enemies[i]->get_name()
-                 << "[HP:" << enemies[i]->get_health() << "] ";
+                << "[HP:" << enemies[i]->get_health() << "] ";
         }
         cout << (enemies.size() + 1) << ". BACK\n";
 
@@ -87,7 +93,7 @@ void Battle::BasicPlayerMagic(Character* npc) {
 
         // BACK
         if (input == static_cast<int>(enemies.size()) + 1) {
-            return;
+            return true;
         }
 
         // Invalid range
@@ -109,24 +115,27 @@ void Battle::BasicPlayerMagic(Character* npc) {
         }
 
         // Optional: mana check (if you want it)
-        // if (npc->get_mana() < 10) {
-        //     cout << "*-------------------------------------------------------*\n";
-        //     cout << "Not enough mana!\n";
-        //     loop = true;
-        //     continue;
-        // }
-
-        target->take_damage(30);
-        npc->spend_mana(10);
-
-        cout << "*-------------------------------------------------------*\n";
-        cout << "You hit " << target->get_name() << " with a fireball!\n";
-        cout << "It took 30 damage!\n";
-
-        if (!target->is_alive()) {
-            cout << target->get_name() << " is defeated!\n";
+        if (npc->get_mana() < 10) {
+            cout << "*-------------------------------------------------------*\n";
+            cout << "Not enough mana!\n";
+            loop = true;
+           continue;
         }
+        else {
 
+            target->take_damage(30);
+            npc->spend_mana(10);
+
+            cout << "*-------------------------------------------------------*\n";
+            cout << "You hit " << target->get_name() << " with a fireball!\n";
+            target->status_handler(StatusCondition::Burn, 5);
+            cout << "It took 30 damage!\n";
+
+            if (!target->is_alive()) {
+                cout << target->get_name() << " is defeated!\n";
+            }
+            return false;
+        }
     } while (loop);
 }
 
@@ -194,47 +203,90 @@ void Battle::DecideTurnOrder() {
 }
 
 void Battle::PlayerTurn(Character* npc) {
-    cout << "*-------------------------------------------------------*\n";
+    //recover a little mana!
+    npc->restore_mana(5);
+
+    cout << dividerFlourish << std::endl;
     cout << "It is " << npc->get_name() << "'s turn!\n";
-    cout << "Health: " << npc->get_health() << " Mana: " << npc->get_mana() << "\n";
+    npc->status_handler(StatusCondition::None, 0);
+    cout << "Health: " << npc->get_health() << "/" << npc-> get_max_health()
+         << " Mana: " << npc->get_mana() << "/" << npc->get_max_mana()
+         << " Attack Bonus: " << npc->get_attack() << "\n";
 
+    PlayerMenu(npc);
+
+}
+
+void Battle::PlayerMenu(Character* npc) {
     int input = 0;
-    bool loop = false;
 
-    do {
-        loop = false;
-
-        cout << R"(
-*-------------------------------------------------------*
-Choose an action!
+    std::cout << dividerFlourish << std::endl;
+    cout << R"(Choose an action!
 1. ATTACK    2. MAGIC    3. ITEMS    4. ESCAPE
 )" << endl;
 
-        cin >> input;
+    cin >> input;
 
-        switch (input) {
-        case 1:
-            BasicPlayerAttack(npc);
-            break;
-        case 2:
-            BasicPlayerMagic(npc);
-            break;
-        case 3:
-            AccessInventory();
-            loop = true;
-            break;
-        case 4:
-            cout << R"(
-*-------------------------------------------------------*
+    switch (input) {
+    case 1:
+        //BasicPlayerAttack(npc);
+        PlayerAttack(npc, Physical);
+        break;
+    case 2:
+        //BasicPlayerMagic(npc);
+        PlayerAttack(npc, Magic);
+        break;
+    case 3:
+        AccessInventory();
+        break;
+    case 4:
+        std::cout << dividerFlourish << std::endl;
+        cout << R"(
 You tried to run away, but it failed!
 )" << endl;
-            loop = true;
-            break;
-        default:
-            loop = true;
+        PlayerMenu(npc);
+        break;
+
+    default:
+        std::cout << "Invalid input! Try again!" << std::endl;
+        PlayerMenu(npc);
+    }
+}
+
+void Battle::PlayerAttack(Character* npc, Category type) {
+    //diplay attacks and get positions
+    std::cout << dividerFlourish << std::endl;
+    std::vector<int> options = npc->display_actions(type);
+
+    int input = 0;
+    std::cin >> input;
+
+    //BACK section: returns to playerMenu
+    if (input == (options.size() + 1)) {
+        PlayerMenu(npc);
+        return;
+
+    }//out of range sections: gives error message and runs playerAttack again
+    else if (input > options.size() || input < 0) {
+
+        std::cout << dividerFlourish << std::endl;
+        std::cout << "Invalid input! Please try again." << std::endl;
+
+        PlayerAttack(npc, type);
+        return;
+
+    }//run selected attack section
+    else {
+        Character* targetChoice = nullptr;
+        ActionData moveChoice = actionDatabase[npc->get_action_ids()[options[input - 1]]];
+
+        //check if there is more than one enemy
+        if (enemies.size() == 1) {
+            targetChoice = enemies[0];
         }
 
-    } while (loop);
+        npc->execute_attack(moveChoice, targetChoice);
+    }
 }
 
 void Battle::EnemyTurn(Character* npc) {
@@ -259,7 +311,11 @@ void Battle::EnemyTurn(Character* npc) {
     heroes[idx]->take_damage(dmg);
 
     cout << "*-------------------------------------------------------*\n";
+    //print enemy info
+    std::cout << npc->get_name() << "'s turn! Health: " << npc->get_health() << "/" << npc->get_max_health() << std::endl;
+    npc->status_handler(StatusCondition::None, 0);
     cout << npc->get_name() << " wacked " << heroes[idx]->get_name() << "!\n";
+    heroes[idx]->status_handler(StatusCondition::Poison, 4);
     cout << heroes[idx]->get_name() << " has " << heroes[idx]->get_health() << " health left!\n";
 }
 
@@ -293,7 +349,8 @@ int Battle::CheckForWinLoss() {
 
 void Battle::AccessInventory() {
     cout << "*-------------------------------------------------------*\n";
-    cout << "There is nothing in your bag...\n";
+    cout << "Inventory access is disabled in battle.\n";
+    cout << "Use the Manage Inventory menu outside of combat.\n";
 }
 
 void Battle::MenuOptions() {
