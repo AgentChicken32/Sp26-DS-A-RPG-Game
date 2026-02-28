@@ -23,13 +23,21 @@ std::unordered_map<std::string, StatusCondition> statusTypeMap = {
 
 void LoadDataBase() {
 	//std::cout << "Running..." << std::endl;
-
-	//variable for json file
-	std::ifstream file("Actions.json");
+	
+	//////////////////////
+	//JSON FILE VARIABLE//
+	//////////////////////
+	//if the json file is not loading
+	//set this variable to its file path,
+	//currently I have it set to what works for me, but
+	//if you place the json file in your project folder it will work with
+	// "Actions.json" instead of a full file path
+	std::ifstream file("../../jsons/Actions.json");
 
 	//check if the file is open
 	if (!file.is_open()) {
 		std::cout << "File is not loaded! Failed to load action data!" << std::endl;
+		std::cout << "Check the \"ActionObject.cpp\" file for more information at line 28!" << std::endl;
 		return;
 	}
 
