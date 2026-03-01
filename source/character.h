@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <random>
 #include <vector>
+#include <array>
 #include "ActionObject.h"
 
 class Character {
@@ -45,7 +46,7 @@ public:
     int  get_max_mana() const;
     int  get_max_stamina() const;
 
-    std::array<int, 6> get_action_ids();
+    const std::array<int, 6>& get_action_ids() const;
 
     bool is_alive() const;
 

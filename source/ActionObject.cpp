@@ -1,5 +1,7 @@
 #include "ActionObject.h"
 #include <fstream>
+#include <array>
+#include <filesystem>
 
 //Holds every loaded action in the game
 std::unordered_map<int, ActionData> actionDatabase;
@@ -21,62 +23,96 @@ std::unordered_map<std::string, StatusCondition> statusTypeMap = {
 	{"Poison", StatusCondition::Poison}
 };
 
-void LoadDataBase() {
-	//std::cout << "Running..." << std::endl;
-	
-	//////////////////////
-	//JSON FILE VARIABLE//
-	//////////////////////
-	//if the json file is not loading
-	//set this variable to its file path,
-	//currently I have it set to what works for me, but
-	//if you place the json file in your project folder it will work with
-	// "Actions.json" instead of a full file path
-	std::ifstream file("../../jsons/Actions.json");
+static std::ifstream OpenActionJsonFile(std::filesystem::path& loadedPath) {
+	const std::array<std::filesystem::path, 4> candidates = {
+		"jsons/Actions.json",
+		"../jsons/Actions.json",
+		"../../jsons/Actions.json",
+		"Actions.json"
+	};
 
-	//check if the file is open
+	for (const auto& path : candidates) {
+		std::ifstream file(path);
+		if (file.is_open()) {
+			loadedPath = path;
+			return file;
+		}
+	}
+
+	return std::ifstream{};
+}
+
+bool LoadDataBase() {
+	actionDatabase.clear();
+
+	std::filesystem::path loadedPath;
+	std::ifstream file = OpenActionJsonFile(loadedPath);
+
 	if (!file.is_open()) {
 		std::cout << "File is not loaded! Failed to load action data!" << std::endl;
-		std::cout << "Check the \"ActionObject.cpp\" file for more information at line 28!" << std::endl;
-		return;
+		std::cout << "Tried: jsons/Actions.json, ../jsons/Actions.json, ../../jsons/Actions.json, Actions.json" << std::endl;
+		return false;
 	}
 
-	//convert file variable into json variable
 	nlohmann::json data;
-	file >> data;
-	
-	//LARGE BLOCK OF CODE
-	//this block of code iterates through the json file and fills the actionDatabase
-	for (const auto& action : data) {
-		//this section fills the actions variables
-		ActionData A;
-		A.id = action["id"].get<int>();
-		A.name = action["name"].get<std::string>();
-		A.category = categoryTypeMap.at(action["category"].get<std::string>());
-		A.manaCost = action["manaCost"].get<int>();
-		A.accuracy = action["accuracy"].get<int>();
-
-		//this for loop fills the actions effect's variables then adds it to a vector
-		for (const auto& effect : action["effects"]) {
-			EffectData* E = new EffectData();
-			E->type = effectTypeMap.at(effect["type"].get<std::string>());
-			E->power = effect.value("power", 0);
-			E->status = statusTypeMap.at(effect.value("statusCondition", ("None")));
-			E->afflictionChance = effect.value("afflictionChance", 1.0);
-
-			A.effects.push_back(*E);
-		}
-
-		//place action into database
-		actionDatabase[A.id] = A;
-
-		//Debugging
-		//std::cout << "Loaded " << actionDatabase[A.id].name << "!" << std::endl;
+	try {
+		file >> data;
+	} catch (const std::exception& ex) {
+		std::cout << "Failed to parse action data JSON: " << ex.what() << std::endl;
+		return false;
 	}
 
-	//std::cout << "Ending..." << std::endl;
+	if (!data.is_array()) {
+		std::cout << "Action data JSON must be an array." << std::endl;
+		return false;
+	}
+
+	std::size_t loadedCount = 0;
+
+	for (const auto& action : data) {
+		try {
+			ActionData A;
+			A.id = action.at("id").get<int>();
+			A.name = action.at("name").get<std::string>();
+			A.category = categoryTypeMap.at(action.at("category").get<std::string>());
+			A.manaCost = action.at("manaCost").get<int>();
+			A.accuracy = action.at("accuracy").get<int>();
+
+			for (const auto& effect : action.at("effects")) {
+				EffectData E;
+				E.type = effectTypeMap.at(effect.at("type").get<std::string>());
+				E.power = effect.value("power", 0);
+				E.status = statusTypeMap.at(effect.value("statusCondition", std::string("None")));
+				E.afflictionChance = effect.value("afflictionChance", 1.0);
+
+				A.effects.push_back(E);
+			}
+
+			actionDatabase[A.id] = A;
+			loadedCount++;
+		} catch (const std::exception& ex) {
+			std::cout << "Skipping malformed action entry: " << ex.what() << std::endl;
+		}
+	}
+
+	if (loadedCount == 0) {
+		std::cout << "No valid actions were loaded from " << loadedPath << "." << std::endl;
+		return false;
+	}
+
+	std::cout << "Loaded " << loadedCount << " actions from " << loadedPath << "." << std::endl;
+	return true;
 }
 
 ActionData GetAction(int id) {
-	return actionDatabase[1];
+	const auto it = actionDatabase.find(id);
+	if (it != actionDatabase.end()) {
+		return it->second;
+	}
+
+	ActionData missing;
+	missing.id = id;
+	missing.name = "Unknown Action";
+	missing.accuracy = 0;
+	return missing;
 }

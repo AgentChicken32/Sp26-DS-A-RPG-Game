@@ -3,10 +3,57 @@
 
 #include <algorithm>
 #include <iostream>
+#include <limits>
 #include <random>
 #include <vector>
 
 using namespace std;
+
+static int read_int_choice() {
+    int choice{};
+    while (!(cin >> choice)) {
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cout << "Please enter a number: ";
+    }
+    return choice;
+}
+
+static Character* choose_enemy_target(vector<Character*>& enemies) {
+    vector<Character*> alive;
+    for (Character* enemy : enemies) {
+        if (enemy && enemy->is_alive()) {
+            alive.push_back(enemy);
+        }
+    }
+
+    if (alive.empty()) {
+        return nullptr;
+    }
+    if (alive.size() == 1) {
+        return alive[0];
+    }
+
+    while (true) {
+        cout << "*-------------------------------------------------------*\n";
+        cout << "Pick a target:\n";
+        for (int i = 0; i < static_cast<int>(alive.size()); ++i) {
+            cout << (i + 1) << ". " << alive[i]->get_name()
+                 << "[HP:" << alive[i]->get_health() << "] ";
+        }
+        cout << (alive.size() + 1) << ". BACK\n";
+
+        const int input = read_int_choice();
+        if (input == static_cast<int>(alive.size()) + 1) {
+            return nullptr;
+        }
+        if (input >= 1 && input <= static_cast<int>(alive.size())) {
+            return alive[input - 1];
+        }
+
+        cout << "Invalid input! Please try again.\n";
+    }
+}
 
 // ------------------------------------------------------------
 // Basic Implementation of a player attack function
@@ -31,7 +78,7 @@ bool Battle::BasicPlayerAttack(Character* npc) {
         }
         cout << (enemies.size() + 1) << ". BACK\n";
 
-        cin >> input;
+        input = read_int_choice();
 
         // BACK
         if (input == static_cast<int>(enemies.size()) + 1) {
@@ -69,6 +116,8 @@ bool Battle::BasicPlayerAttack(Character* npc) {
         return false;
 
     } while (loop);
+
+    return false;
 }
 
 // ------------------------------------------------------------
@@ -89,7 +138,7 @@ bool Battle::BasicPlayerMagic(Character* npc) {
         }
         cout << (enemies.size() + 1) << ". BACK\n";
 
-        cin >> input;
+        input = read_int_choice();
 
         // BACK
         if (input == static_cast<int>(enemies.size()) + 1) {
@@ -137,6 +186,8 @@ bool Battle::BasicPlayerMagic(Character* npc) {
             return false;
         }
     } while (loop);
+
+    return false;
 }
 
 // ------------------------------------------------------------
@@ -225,7 +276,7 @@ void Battle::PlayerMenu(Character* npc) {
 1. ATTACK    2. MAGIC    3. ITEMS    4. ESCAPE
 )" << endl;
 
-    cin >> input;
+    input = read_int_choice();
 
     switch (input) {
     case 1:
@@ -257,17 +308,23 @@ void Battle::PlayerAttack(Character* npc, Category type) {
     //diplay attacks and get positions
     std::cout << dividerFlourish << std::endl;
     std::vector<int> options = npc->display_actions(type);
+    if (options.empty()) {
+        std::cout << "No actions of that type are available.\n";
+        PlayerMenu(npc);
+        return;
+    }
 
     int input = 0;
-    std::cin >> input;
+    input = read_int_choice();
+    const int backOption = static_cast<int>(options.size()) + 1;
 
     //BACK section: returns to playerMenu
-    if (input == (options.size() + 1)) {
+    if (input == backOption) {
         PlayerMenu(npc);
         return;
 
     }//out of range sections: gives error message and runs playerAttack again
-    else if (input > options.size() || input < 0) {
+    else if (input < 1 || input > backOption) {
 
         std::cout << dividerFlourish << std::endl;
         std::cout << "Invalid input! Please try again." << std::endl;
@@ -277,14 +334,26 @@ void Battle::PlayerAttack(Character* npc, Category type) {
 
     }//run selected attack section
     else {
-        Character* targetChoice = nullptr;
-        ActionData moveChoice = actionDatabase[npc->get_action_ids()[options[input - 1]]];
-
-        //check if there is more than one enemy
-        if (enemies.size() == 1) {
-            targetChoice = enemies[0];
+        const std::array<int, 6>& actionIds = npc->get_action_ids();
+        const int actionIndex = options[input - 1];
+        if (actionIndex < 0 || actionIndex >= static_cast<int>(actionIds.size())) {
+            std::cout << "Invalid action selection.\n";
+            PlayerMenu(npc);
+            return;
         }
 
+        ActionData moveChoice = GetAction(actionIds[actionIndex]);
+        if (moveChoice.name == "Unknown Action") {
+            std::cout << "That action is unavailable.\n";
+            PlayerMenu(npc);
+            return;
+        }
+
+        Character* targetChoice = choose_enemy_target(enemies);
+        if (!targetChoice) {
+            PlayerMenu(npc);
+            return;
+        }
         npc->execute_attack(moveChoice, targetChoice);
     }
 }

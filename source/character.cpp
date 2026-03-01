@@ -20,7 +20,7 @@ int Character::get_max_health() const { return m_stats.max_health; }
 int Character::get_max_mana() const { return m_stats.max_mana; }
 int Character::get_max_stamina() const { return m_stats.max_stamina; }
 
-std::array<int, 6> Character::get_action_ids() { return m_stats.actions; };
+const std::array<int, 6>& Character::get_action_ids() const { return m_stats.actions; }
 
 bool Character::is_alive() const { return m_stats.health > 0; }
 
@@ -84,11 +84,17 @@ void Character::status_handler(StatusCondition status, int chanceOf) {
 
     //normal->inflicted
     if (m_stats.statusCondition == StatusCondition::None) {
+        if (status == StatusCondition::None || chanceOf <= 0) {
+            return;
+        }
+
         std::uniform_int_distribution<int> inflict(1, chanceOf);
 
         if (inflict(gen) == 1) {
             m_stats.statusCondition = status;
             switch (status) {
+            case StatusCondition::None:
+                break;
             case StatusCondition::Poison:
                 std::cout << get_name() << " was poisoned!" << std::endl;
                 break;
@@ -103,13 +109,15 @@ void Character::status_handler(StatusCondition status, int chanceOf) {
         std::uniform_int_distribution<int> recoverBurning(1, 3);
 
         switch (m_stats.statusCondition) {
+        case StatusCondition::None:
+            break;
         case StatusCondition::Poison://Poison: 1/5 chance to lose effect each turn Deals 2 damage per turn.
             if (recoverPoison(gen) == 1) {
                 m_stats.statusCondition = StatusCondition::None;
                 std::cout << "The poison lost it's effect!" << std::endl;
             }
             else {
-                m_stats.health -= 2;
+                take_damage(2);
                 std::cout << get_name() << " took 2 poison damage!" << std::endl;
             }
 
@@ -120,7 +128,7 @@ void Character::status_handler(StatusCondition status, int chanceOf) {
                 std::cout << "The fire went out!" << std::endl;
             }
             else {
-                m_stats.health -= 5;
+                take_damage(5);
                 std::cout << get_name() << " took 5 burning damage!" << std::endl;
             }
 
@@ -132,6 +140,11 @@ void Character::status_handler(StatusCondition status, int chanceOf) {
 void Character::execute_attack(ActionData action, Character* target) {
     std::string dividerFlourish = "*-------------------------------------------------------*";
     std::cout << dividerFlourish << std::endl;
+
+    if (target == nullptr) {
+        std::cout << "No valid target selected." << std::endl;
+        return;
+    }
 
     ////////////////
     //MANA SECTION//
@@ -193,14 +206,21 @@ std::vector<int> Character::display_actions(Category type) {
 
     //take input type and iterate through list of action ids, find data, and display names
     for (int id : get_action_ids()) {
+        const auto actionIt = actionDatabase.find(id);
+        if (actionIt == actionDatabase.end()) {
+            posCounter++;
+            continue;
+        }
 
-        if (actionDatabase[id].category == type) {
+        const ActionData& action = actionIt->second;
 
-            std::cout << counter << ". " << actionDatabase[id].name;
+        if (action.category == type) {
+
+            std::cout << counter << ". " << action.name;
 
             //display mana cost: ugly for the time being
             if (type == Magic) {
-                std::cout << "[" << actionDatabase[id].manaCost << "]";
+                std::cout << "[" << action.manaCost << "]";
             }
 
             //spacing
@@ -276,7 +296,8 @@ Enemy::Enemy(int level, const std::string& name)
 
 int Enemy::get_level() const {return m_level;}
 
-void Enemy::enemy_ai(std::vector<Character*> heroes, std::vector<Character*> enemies) {
+void Enemy::enemy_ai([[maybe_unused]] std::vector<Character*> heroes,
+                     [[maybe_unused]] std::vector<Character*> enemies) {
 
     //can I kill anyone?
 
