@@ -137,7 +137,7 @@ void Character::execute_attack(ActionData action, Character* target) {
     //MANA SECTION//
     ////////////////
     //subtract mana from total
-    if (action.manaCost < get_mana() && action.category == Magic) {
+    if (action.manaCost <= get_mana() && action.category == Magic) {
         spend_mana(action.manaCost);
         std::cout << get_name() << " cast " << action.name << " using " << action.manaCost << " points of mana." << std::endl;
     }
