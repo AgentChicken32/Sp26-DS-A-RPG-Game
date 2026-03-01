@@ -25,7 +25,7 @@
       },
       {
         "type": "Status",
-        "statusCondition":  "Burn",
+        "statusCondition": "Burn",
         "afflictionChance": 0.2
       }
     ]
@@ -58,6 +58,11 @@
       {
         "type": "Damage",
         "power": 20
+      },
+      {
+        "type": "Status",
+        "statusCondition": "Poison",
+        "afflictionChance": 0.25
       }
     ]
   },
@@ -67,6 +72,19 @@
     "category": "Magic",
     "accuracy": 100,
     "manaCost": 10,
+    "effects": [
+      {
+        "type": "Damage",
+        "power": 20
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "name": "Tackle",
+    "category": "Physical",
+    "accuracy": 90,
+    "manaCost": 0,
     "effects": [
       {
         "type": "Damage",
