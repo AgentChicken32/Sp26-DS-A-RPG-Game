@@ -44,7 +44,7 @@ struct ActionData {
 extern std::unordered_map<int, ActionData> actionDatabase;
 
 //fills action database with all action data
-void LoadDataBase();
+bool LoadDataBase();
 
 //get specified action from action data using action id
 ActionData GetAction(int id);

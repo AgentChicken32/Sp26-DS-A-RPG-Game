@@ -3,3 +3,9 @@
 ################################################################################
 
 /RPGProject
+
+# Runtime save-state artifacts
+/saves/
+/source/saves/
+*.tmp
+*.bak

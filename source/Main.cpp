@@ -9,6 +9,7 @@
 #include "BattleClass.h"
 
 #include "ActionObject.h"
+#include "SaveState.h"
 
 // Reads an int choice safely (clears bad input).
 static int read_int_choice()
@@ -217,7 +218,9 @@ static void manage_inventory(Inventory& inventory, Character& player)
 int main()
 {
     //EXTREMELY IMPORTANT: loads every action for battle use
-    LoadDataBase();
+    if (!LoadDataBase()) {
+        std::cout << "Warning: action data failed to load. Battle moves may be unavailable.\n";
+    }
     
     Character::Stats heroStats{};
     heroStats.max_health  = 100;
@@ -239,7 +242,9 @@ int main()
                   << "1) Return to menu\n"
                   << "2) Manage inventory\n"
                   << "3) Start battle (test)\n"
-                  << "4) Quit\n"
+                  << "4) Save progress\n"
+                  << "5) Load progress\n"
+                  << "6) Quit\n"
                   << "Choice: ";
 
         const int choice = read_int_choice();
@@ -275,7 +280,17 @@ int main()
             std::cout << "[DEBUG] Battle ended. Returning to menu...\n";
             break;
         }
-        case 4:
+        case 4: {
+            SaveResult result = SaveGameState(hero, inventory);
+            std::cout << result.message << "\n";
+            break;
+        }
+        case 5: {
+            SaveResult result = LoadGameState(hero, inventory);
+            std::cout << result.message << "\n";
+            break;
+        }
+        case 6:
             running = false;
             break;
 

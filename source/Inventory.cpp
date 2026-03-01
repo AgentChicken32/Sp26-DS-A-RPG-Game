@@ -90,6 +90,29 @@ std::vector<ItemSummary> Inventory::summarize() const {
     return summary;
 }
 
+std::vector<InventoryItem> Inventory::dump_items() const {
+    std::vector<InventoryItem> items;
+    Node* current = m_head;
+    while (current) {
+        items.push_back(current->item);
+        current = current->next;
+    }
+    return items;
+}
+
+void Inventory::load_items(const std::vector<InventoryItem>& items,
+                           const std::string& equipped_weapon_name) {
+    clear();
+    for (const auto& item : items) {
+        add_item(item);
+    }
+
+    m_equipped_weapon_name.clear();
+    if (!equipped_weapon_name.empty()) {
+        equip_weapon(equipped_weapon_name);
+    }
+}
+
 bool Inventory::equip_weapon(const std::string& name) {
     Node* node = find_first_by_name(name);
     if (!node || node->item.type != InventoryItem::Type::Weapon) {

@@ -35,6 +35,9 @@ public:
     bool empty() const;
 
     std::vector<ItemSummary> summarize() const;
+    std::vector<InventoryItem> dump_items() const;
+    void load_items(const std::vector<InventoryItem>& items,
+                    const std::string& equipped_weapon_name);
 
     bool equip_weapon(const std::string& name);
     void unequip_weapon();
