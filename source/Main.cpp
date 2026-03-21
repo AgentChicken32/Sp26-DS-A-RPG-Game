@@ -11,6 +11,8 @@
 #include "ActionObject.h"
 #include "SaveState.h"
 
+#include "DialogueDatabase.h"
+
 // Reads an int choice safely (clears bad input).
 static int read_int_choice()
 {
@@ -220,6 +222,10 @@ int main()
     //EXTREMELY IMPORTANT: loads every action for battle use
     if (!LoadDataBase()) {
         std::cout << "Warning: action data failed to load. Battle moves may be unavailable.\n";
+    }
+
+    if (!LoadDialogueDatabase()) {
+        std::cout << "Warning: dialogue data failed to load. Dialogue may be unavailable." << std::endl;
     }
     
     Character::Stats heroStats{};
