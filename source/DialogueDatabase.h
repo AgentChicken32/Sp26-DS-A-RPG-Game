@@ -12,12 +12,18 @@ enum Type {
 	Null
 };
 
+struct DialogueOption {
+	int id = 0;
+	std::string text = "";
+	int next = 0;
+};
+
 struct TextNode {
 	int id = 0;
 	Type type = Null;
 	std::string text = "";
 	int next = 0;
-	std::vector<TextNode*> options;
+	std::vector<DialogueOption> options;
 };
 
 //FUNCTIONS

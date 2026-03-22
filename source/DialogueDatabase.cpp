@@ -1,4 +1,6 @@
 #include "DialogueDatabase.h"
+#include <array>
+#include <filesystem>
 #include <fstream>
 
 //The Dialogue Database!!
@@ -72,12 +74,12 @@ bool LoadDialogueDatabase() {
 
 				if (T.type == Type::Choice) {
 					for (const auto& choice : text.at("Options")) {
-						TextNode C;
-						C.id = choice.at("id").get<int>();
-						C.text = choice.at("Text").get<std::string>();
-						C.next = choice.at("Next").get<int>();
+						DialogueOption option;
+						option.id = choice.at("id").get<int>();
+						option.text = choice.at("Text").get<std::string>();
+						option.next = choice.at("Next").get<int>();
 
-						T.options.push_back(&C);
+						T.options.push_back(option);
 					}
 				}
 
@@ -108,4 +110,6 @@ std::unordered_map<int, TextNode> GetDialogue(std::string group) {
 	TextNode T;
 	T.id = -1;
 	T.text = "Woah, secret message! Wait... this isn't a secret message... oh no! This is an error message!\n Error, non-existant group id: " + group;
+	script[T.id] = T;
+	return script;
 }
