@@ -216,6 +216,73 @@ static void manage_inventory(Inventory& inventory, Character& player)
         }
     }
 }
+// Simple dialogue runner
+static void run_dialogue(const std::string& groupName) {
+    auto script = GetDialogue(groupName);
+    if (script.empty()) {
+        std::cout << "No dialogue found for group '" << groupName << "'.\n";
+        return;
+    }
+
+    int currentId = 1; // assume each group starts at node id 1
+
+    while (true) {
+        auto it = script.find(currentId);
+        if (it == script.end()) {
+            std::cout << "[Dialogue ended: missing node " << currentId << "]\n";
+            break;
+        }
+
+        TextNode node = it->second;
+        std::cout << "\n" << node.text << "\n";
+
+        // If this node is a choice, show options and let the player pick
+        if (node.type == Type::Choice && !node.options.empty()) {
+            for (std::size_t i = 0; i < node.options.size(); ++i) {
+                int optId = node.options[i];
+                auto optIt = script.find(optId);
+                if (optIt != script.end()) {
+                    const TextNode& optNode = optIt->second;
+                    std::cout << (i + 1) << ") " << optNode.text << "\n";
+                }
+            }
+
+            std::cout << "Choice: ";
+            int choiceIndex = read_int_choice();
+
+            if (choiceIndex < 1 || choiceIndex > static_cast<int>(node.options.size())) {
+                std::cout << "Invalid choice, ending conversation.\n";
+                break;
+            }
+
+            int chosenOptId = node.options[choiceIndex - 1];
+            auto optIt = script.find(chosenOptId);
+            if (optIt == script.end()) {
+                std::cout << "[Dialogue ended: missing option node]\n";
+                break;
+            }
+
+            const TextNode& chosenOpt = optIt->second;
+
+            if (chosenOpt.next == 0) {
+                std::cout << "[Dialogue ended]\n";
+                break;
+            }
+
+            currentId = chosenOpt.next;
+            continue;
+        }
+
+        // Statement node: go to its next, or end if next == 0
+        if (node.next == 0) {
+            std::cout << "[Dialogue ended]\n";
+            break;
+        }
+
+        currentId = node.next;
+    }
+}
+
 
 int main()
 {
@@ -245,13 +312,16 @@ int main()
 
     while (running) {
         std::cout << "\n=== RPG TESTER MENU ===\n"
-                  << "1) Return to menu\n"
-                  << "2) Manage inventory\n"
-                  << "3) Start battle (test)\n"
-                  << "4) Save progress\n"
-                  << "5) Load progress\n"
-                  << "6) Quit\n"
-                  << "Choice: ";
+          << "1) Return to menu\n"
+          << "2) Manage inventory\n"
+          << "3) Start battle (test)\n"
+          << "4) Save progress\n"
+          << "5) Load progress\n"
+          << "6) Talk (Conversation1)\n"
+          << "7) Talk (Conversation2)\n"
+          << "8) Quit\n"
+          << "Choice: ";
+
 
         const int choice = read_int_choice();
 
@@ -296,10 +366,18 @@ int main()
             std::cout << result.message << "\n";
             break;
         }
-        case 6:
+        case 6: {
+            run_dialogue("Conversation1");
+            break;
+        }
+        case 7: {
+            run_dialogue("Conversation2");
+            break;
+        }
+        case 8: {
             running = false;
             break;
-
+        }
         default:
             std::cout << "Invalid choice.\n";
             break;
