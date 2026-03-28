@@ -2,8 +2,10 @@
 #include <limits>
 #include <vector>
 #include <string>
+#include <conio.h> //for getch()
 
 #include "Inventory.h"
+#include "GameItems.h"
 #include "character.h"
 
 #include "BattleClass.h"
@@ -85,23 +87,15 @@ static void print_inventory_summary(const std::vector<ItemSummary>& summary,
 
 static void manage_inventory(Inventory& inventory, Character& player)
 {
-    static const std::vector<InventoryItem> kCatalog = {
-        {"Wooden Sword", InventoryItem::Type::Weapon, 5, 10,
-         "A simple training sword."},
-        {"Iron Sword", InventoryItem::Type::Weapon, 10, 25,
-         "Reliable steel blade."},
-        {"Training Dagger", InventoryItem::Type::Weapon, 3, 8,
-         "Light and quick."},
-        {"Potion", InventoryItem::Type::Consumable, 0, 5,
-         "Restores a little health."},
-        {"Herb", InventoryItem::Type::Misc, 0, 1,
-         "Common ingredient."}
-    };
+    const auto& itemCatalog = GameItems::Catalog();
 
     bool in_menu = true;
     while (in_menu) {
         const InventoryItem* equipped = inventory.equipped_weapon();
         std::cout << "\n=== INVENTORY MENU ===\n";
+        std::cout << "Gold: " << player.get_gold() << "\n";
+        std::cout << "Slots: " << inventory.size() << "/" << inventory.capacity()
+                  << " (" << inventory.remaining_capacity() << " free)\n";
         if (equipped) {
             std::cout << "Equipped weapon: " << equipped->name
                       << " (+" << equipped->attack_bonus << " atk)\n";
@@ -128,22 +122,40 @@ static void manage_inventory(Inventory& inventory, Character& player)
             break;
         }
         case 2: {
-            print_item_catalog(kCatalog);
+            if (inventory.is_full()) {
+                std::cout << "Your inventory is full.\n";
+                break;
+            }
+
+            print_item_catalog(itemCatalog);
             std::cout << "Select item to add (0 to cancel): ";
             int selection = read_int_choice();
             if (selection == 0) {
                 break;
             }
-            if (selection < 1 || selection > static_cast<int>(kCatalog.size())) {
+            if (selection < 1 || selection > static_cast<int>(itemCatalog.size())) {
                 std::cout << "Invalid choice.\n";
                 break;
             }
             const int quantity = read_positive_int("Quantity: ");
-            const InventoryItem& item = kCatalog[selection - 1];
+            const InventoryItem& item = itemCatalog[selection - 1];
+            int addedCount = 0;
             for (int i = 0; i < quantity; ++i) {
-                inventory.add_item(item);
+                if (!inventory.try_add_item(item)) {
+                    break;
+                }
+                ++addedCount;
             }
-            std::cout << "Added " << quantity << "x " << item.name << ".\n";
+
+            if (addedCount == quantity) {
+                std::cout << "Added " << quantity << "x " << item.name << ".\n";
+            } else if (addedCount > 0) {
+                std::cout << "Added " << addedCount << "x " << item.name
+                          << ". Inventory is now full.\n";
+            } else {
+                std::cout << "Could not add " << item.name
+                          << ". Inventory is full.\n";
+            }
             break;
         }
         case 3: {
@@ -217,7 +229,7 @@ static void manage_inventory(Inventory& inventory, Character& player)
     }
 }
 // Simple dialogue runner
-static void run_dialogue(const std::string& groupName) {
+static void run_dialogue(const std::string& groupName, Character &player, Inventory &inventory) {
     auto script = GetDialogue(groupName);
     if (script.empty()) {
         std::cout << "No dialogue found for group '" << groupName << "'.\n";
@@ -234,17 +246,13 @@ static void run_dialogue(const std::string& groupName) {
         }
 
         TextNode node = it->second;
-        std::cout << "\n" << node.text << "\n";
+        std::cout << "\n\n" << node.text << "\n";
 
         // If this node is a choice, show options and let the player pick
         if (node.type == Type::Choice && !node.options.empty()) {
             for (std::size_t i = 0; i < node.options.size(); ++i) {
-                int optId = node.options[i];
-                auto optIt = script.find(optId);
-                if (optIt != script.end()) {
-                    const TextNode& optNode = optIt->second;
-                    std::cout << (i + 1) << ") " << optNode.text << "\n";
-                }
+                const DialogueOption& option = node.options[i];
+                std::cout << (i + 1) << ") " << option.text << "\n";
             }
 
             std::cout << "Choice: ";
@@ -255,14 +263,7 @@ static void run_dialogue(const std::string& groupName) {
                 break;
             }
 
-            int chosenOptId = node.options[choiceIndex - 1];
-            auto optIt = script.find(chosenOptId);
-            if (optIt == script.end()) {
-                std::cout << "[Dialogue ended: missing option node]\n";
-                break;
-            }
-
-            const TextNode& chosenOpt = optIt->second;
+            const DialogueOption& chosenOpt = node.options[choiceIndex - 1];
 
             if (chosenOpt.next == 0) {
                 std::cout << "[Dialogue ended]\n";
@@ -273,9 +274,34 @@ static void run_dialogue(const std::string& groupName) {
             continue;
         }
 
+        //if the node is a battle, start a battle
+        if (node.type == Type::Confront) {
+
+            //PLACEHOLDER BATTLE: NEEDS ROBUST BATTLE START AND CHARACTER FETCHER
+
+            Character::Stats enemyStats{};
+            enemyStats.max_health = 180;
+            enemyStats.health = 180;
+            enemyStats.max_mana = 0;
+            enemyStats.mana = 0;
+            enemyStats.max_stamina = 10;
+            enemyStats.stamina = 10;
+
+            Character villain("Brutish Man", enemyStats);
+
+            std::vector<Character*> heroes{ &player };
+            std::vector<Character*> enemies{ &villain };
+
+            Battle battle(heroes, enemies, &inventory);
+        }
+
+        //wait for user to press enter to continue
+        std::cout << "Press Enter to continue...";
+        _getch();
+
         // Statement node: go to its next, or end if next == 0
         if (node.next == 0) {
-            std::cout << "[Dialogue ended]\n";
+            std::cout << "\n[Dialogue ended]\n";
             break;
         }
 
@@ -312,15 +338,18 @@ int main()
 
     while (running) {
         std::cout << "\n=== RPG TESTER MENU ===\n"
-          << "1) Return to menu\n"
-          << "2) Manage inventory\n"
-          << "3) Start battle (test)\n"
-          << "4) Save progress\n"
-          << "5) Load progress\n"
-          << "6) Talk (Conversation1)\n"
-          << "7) Talk (Conversation2)\n"
-          << "8) Quit\n"
-          << "Choice: ";
+                  << "Gold: " << hero.get_gold()
+                  << " | Inventory: " << inventory.size() << "/"
+                  << inventory.capacity() << "\n"
+                  << "1) Return to menu\n"
+                  << "2) Manage inventory\n"
+                  << "3) Start battle (test)\n"
+                  << "4) Save progress\n"
+                  << "5) Load progress\n"
+                  << "6) Talk (Conversation1)\n"
+                  << "7) Talk (Conversation2)\n"
+                  << "8) Quit\n"
+                  << "Choice: ";
 
 
         const int choice = read_int_choice();
@@ -351,7 +380,7 @@ int main()
             std::vector<Character*> heroes{ &hero };
             std::vector<Character*> enemies{ &villain };
 
-            Battle battle(heroes, enemies);
+            Battle battle(heroes, enemies, &inventory);
 
             std::cout << "[DEBUG] Battle ended. Returning to menu...\n";
             break;
@@ -367,11 +396,11 @@ int main()
             break;
         }
         case 6: {
-            run_dialogue("Conversation1");
+            run_dialogue("Conversation1", hero, inventory);
             break;
         }
         case 7: {
-            run_dialogue("Conversation2");
+            run_dialogue("Conversation2", hero, inventory);
             break;
         }
         case 8: {

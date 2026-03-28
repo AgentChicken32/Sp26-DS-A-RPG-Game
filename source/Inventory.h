@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <string>
 #include <vector>
 
@@ -22,6 +23,8 @@ struct ItemSummary {
 
 class Inventory {
 public:
+    static constexpr std::size_t kCapacity = 12;
+
     Inventory() = default;
     ~Inventory();
 
@@ -29,10 +32,15 @@ public:
     Inventory& operator=(const Inventory&) = delete;
 
     void add_item(const InventoryItem& item);
+    bool try_add_item(const InventoryItem& item);
     bool remove_item_by_name(const std::string& name);
     bool has_item(const std::string& name) const;
     int count_by_name(const std::string& name) const;
     bool empty() const;
+    bool is_full() const;
+    std::size_t size() const;
+    std::size_t capacity() const;
+    std::size_t remaining_capacity() const;
 
     std::vector<ItemSummary> summarize() const;
     std::vector<InventoryItem> dump_items() const;
@@ -52,6 +60,7 @@ private:
 
     Node* m_head = nullptr;
     std::string m_equipped_weapon_name;
+    std::size_t m_size = 0;
 
     Node* find_first_by_name(const std::string& name) const;
     void clear();

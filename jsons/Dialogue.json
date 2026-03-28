@@ -64,8 +64,14 @@
       },
       {
         "id": 5,
-        "Type": "Statement",
+        "Type": "Confront",
         "Text": "I'm gonna really knock your block off now!",
+        "Next": 6
+      },
+      {
+        "id": 6,
+        "Type": "Statement",
+        "Text": "Alright, alright that's enough. Just get out of here already.",
         "Next": 0
       }
     ]
