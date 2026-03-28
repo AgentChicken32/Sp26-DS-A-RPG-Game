@@ -9,6 +9,7 @@
 enum Type {
 	Statement,
 	Choice,
+	Confront,
 	Null
 };
 
