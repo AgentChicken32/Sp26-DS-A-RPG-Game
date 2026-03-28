@@ -2,6 +2,7 @@
 #include <limits>
 #include <vector>
 #include <string>
+#include <conio.h> //for getch()
 
 #include "Inventory.h"
 #include "GameItems.h"
@@ -228,7 +229,7 @@ static void manage_inventory(Inventory& inventory, Character& player)
     }
 }
 // Simple dialogue runner
-static void run_dialogue(const std::string& groupName) {
+static void run_dialogue(const std::string& groupName, Character &player, Inventory &inventory) {
     auto script = GetDialogue(groupName);
     if (script.empty()) {
         std::cout << "No dialogue found for group '" << groupName << "'.\n";
@@ -245,7 +246,7 @@ static void run_dialogue(const std::string& groupName) {
         }
 
         TextNode node = it->second;
-        std::cout << "\n" << node.text << "\n";
+        std::cout << "\n\n" << node.text << "\n";
 
         // If this node is a choice, show options and let the player pick
         if (node.type == Type::Choice && !node.options.empty()) {
@@ -273,9 +274,34 @@ static void run_dialogue(const std::string& groupName) {
             continue;
         }
 
+        //if the node is a battle, start a battle
+        if (node.type == Type::Confront) {
+
+            //PLACEHOLDER BATTLE: NEEDS ROBUST BATTLE START AND CHARACTER FETCHER
+
+            Character::Stats enemyStats{};
+            enemyStats.max_health = 180;
+            enemyStats.health = 180;
+            enemyStats.max_mana = 0;
+            enemyStats.mana = 0;
+            enemyStats.max_stamina = 10;
+            enemyStats.stamina = 10;
+
+            Character villain("Brutish Man", enemyStats);
+
+            std::vector<Character*> heroes{ &player };
+            std::vector<Character*> enemies{ &villain };
+
+            Battle battle(heroes, enemies, &inventory);
+        }
+
+        //wait for user to press enter to continue
+        std::cout << "Press Enter to continue...";
+        _getch();
+
         // Statement node: go to its next, or end if next == 0
         if (node.next == 0) {
-            std::cout << "[Dialogue ended]\n";
+            std::cout << "\n[Dialogue ended]\n";
             break;
         }
 
@@ -370,11 +396,11 @@ int main()
             break;
         }
         case 6: {
-            run_dialogue("Conversation1");
+            run_dialogue("Conversation1", hero, inventory);
             break;
         }
         case 7: {
-            run_dialogue("Conversation2");
+            run_dialogue("Conversation2", hero, inventory);
             break;
         }
         case 8: {

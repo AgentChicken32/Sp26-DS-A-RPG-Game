@@ -9,7 +9,8 @@ std::unordered_map<std::string, std::unordered_map<int, TextNode>> dialogueData;
 
 std::unordered_map<std::string, Type> TypeMap = {
 	{"Statement", Type::Statement},
-	{"Choice", Type::Choice}
+	{"Choice", Type::Choice},
+	{"Confront", Type::Confront}
 };
 
 static std::ifstream OpenDialogueJsonFile(std::filesystem::path& loadedPath) {
