@@ -1,4 +1,5 @@
 #pragma once
+#include "Inventory.h"
 #include "SceneClass.h"
 #include "character.h"
 #include <vector>
@@ -12,13 +13,16 @@ protected:
 
 	std::vector<Character*> turnOrder;
 
+	Inventory* partyInventory = nullptr;
+	int initialEnemyCount = 0;
+
 	std::string dividerFlourish = "*-------------------------------------------------------*";
 
 	int turnCounter = -1; // default to -1 to show it's the start of battle
 
 public:
 	// Methods
-	Battle(std::vector<Character*> good, std::vector<Character*> evil);
+	Battle(std::vector<Character*> good, std::vector<Character*> evil, Inventory* inventory = nullptr);
 
 	void Setup() override; // sets up scene, and displays it
 
@@ -35,6 +39,7 @@ public:
 	void PlayerAttack(Character* npc, Category type);//player attack menu display
 
 	int CheckForWinLoss(); // 0 = ongoing, 1 = enemies dead, 2 = heroes dead
+	void AwardVictoryLoot();
 
 	//soon to be retired
 	bool BasicPlayerAttack(Character* npc); 

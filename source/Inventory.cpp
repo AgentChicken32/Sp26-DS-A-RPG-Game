@@ -9,6 +9,7 @@ void Inventory::add_item(const InventoryItem& item) {
     Node* node = new Node{item, nullptr};
     if (!m_head) {
         m_head = node;
+        ++m_size;
         return;
     }
 
@@ -17,6 +18,16 @@ void Inventory::add_item(const InventoryItem& item) {
         current = current->next;
     }
     current->next = node;
+    ++m_size;
+}
+
+bool Inventory::try_add_item(const InventoryItem& item) {
+    if (is_full()) {
+        return false;
+    }
+
+    add_item(item);
+    return true;
 }
 
 bool Inventory::remove_item_by_name(const std::string& name) {
@@ -31,6 +42,9 @@ bool Inventory::remove_item_by_name(const std::string& name) {
                 m_head = current->next;
             }
             delete current;
+            if (m_size > 0) {
+                --m_size;
+            }
 
             if (name == m_equipped_weapon_name && count_by_name(name) == 0) {
                 m_equipped_weapon_name.clear();
@@ -62,6 +76,26 @@ int Inventory::count_by_name(const std::string& name) const {
 
 bool Inventory::empty() const {
     return m_head == nullptr;
+}
+
+bool Inventory::is_full() const {
+    return m_size >= capacity();
+}
+
+std::size_t Inventory::size() const {
+    return m_size;
+}
+
+std::size_t Inventory::capacity() const {
+    return kCapacity;
+}
+
+std::size_t Inventory::remaining_capacity() const {
+    if (m_size >= capacity()) {
+        return 0;
+    }
+
+    return capacity() - m_size;
 }
 
 std::vector<ItemSummary> Inventory::summarize() const {
@@ -160,4 +194,5 @@ void Inventory::clear() {
     }
     m_head = nullptr;
     m_equipped_weapon_name.clear();
+    m_size = 0;
 }

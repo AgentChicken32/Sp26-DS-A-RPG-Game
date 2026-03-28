@@ -1,5 +1,6 @@
 #include "BattleClass.h"
 #include "character.h"
+#include "LootTable.h"
 
 #include <algorithm>
 #include <iostream>
@@ -192,11 +193,13 @@ bool Battle::BasicPlayerMagic(Character* npc) {
 
 // ------------------------------------------------------------
 
-Battle::Battle(vector<Character*> good, vector<Character*> evil)
+Battle::Battle(vector<Character*> good, vector<Character*> evil, Inventory* inventory)
     : Scene("Battle")
 {
     heroes = good;
     enemies = evil;
+    partyInventory = inventory;
+    initialEnemyCount = static_cast<int>(evil.size());
 
     DecideTurnOrder();
     Setup();
@@ -234,6 +237,7 @@ void Battle::Setup() {
 
     if (result == 1) {
         cout << "You win!\n";
+        AwardVictoryLoot();
     } else if (result == 2) {
         cout << "You lose!\n";
     }
@@ -414,6 +418,28 @@ int Battle::CheckForWinLoss() {
     if (enemies.empty()) return 1;
     if (heroes.empty())  return 2;
     return 0;
+}
+
+void Battle::AwardVictoryLoot() {
+    if (!partyInventory) {
+        return;
+    }
+
+    Character* rewardRecipient = nullptr;
+    for (Character* hero : heroes) {
+        if (hero) {
+            rewardRecipient = hero;
+            break;
+        }
+    }
+
+    if (!rewardRecipient) {
+        return;
+    }
+
+    const LootDropResult reward =
+        AwardBattleLoot(*rewardRecipient, *partyInventory, initialEnemyCount);
+    cout << reward.message << "\n";
 }
 
 void Battle::AccessInventory() {
