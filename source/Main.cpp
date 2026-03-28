@@ -308,7 +308,27 @@ static void run_dialogue(const std::string& groupName, Character &player, Invent
         currentId = node.next;
     }
 }
-
+void errorSound() {
+    Beep(180, 120);
+    Beep(120, 180);
+}
+void magicSound() {
+    Beep(523, 60);
+    Beep(659, 60);
+    Beep(784, 90);
+}
+void menuSound() {
+    Beep(784, 35);
+}
+void attackSound() {
+    Beep(220, 40);
+    Beep(180, 40);
+}
+void endSound() {
+    Beep(784, 60);
+    Beep(523, 80);
+    Beep(392, 140);
+}
 
 int main()
 {
@@ -357,14 +377,17 @@ int main()
         switch (choice) {
 
         case 1:
+            menuSound();
             // No-op for now (keeps looping)
             break;
 
         case 2:
+            menuSound();
             manage_inventory(inventory, hero);
             break;
 
         case 3: {
+            menuSound();
             std::cout << "\n[DEBUG] Starting battle...\n";
 
             Character::Stats enemyStats{};
@@ -386,28 +409,34 @@ int main()
             break;
         }
         case 4: {
+            menuSound();
             SaveResult result = SaveGameState(hero, inventory);
             std::cout << result.message << "\n";
             break;
         }
         case 5: {
+            menuSound();
             SaveResult result = LoadGameState(hero, inventory);
             std::cout << result.message << "\n";
             break;
         }
         case 6: {
+            menuSound();
             run_dialogue("Conversation1", hero, inventory);
             break;
         }
         case 7: {
+            menuSound();
             run_dialogue("Conversation2", hero, inventory);
             break;
         }
         case 8: {
+			endSound();
             running = false;
             break;
         }
         default:
+			errorSound();
             std::cout << "Invalid choice.\n";
             break;
         }
