@@ -9,3 +9,4 @@
 /source/saves/
 *.tmp
 *.bak
+/CppProperties.json
