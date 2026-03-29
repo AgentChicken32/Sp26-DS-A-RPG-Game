@@ -5,6 +5,22 @@ Character::Character(std::string name, Stats stats)
     clamp_all();
 }
 
+namespace {
+
+const char* StatusName(StatusCondition status) {
+    switch (status) {
+    case StatusCondition::None:
+        return "nothing";
+    case StatusCondition::Poison:
+        return "poison";
+    case StatusCondition::Burn:
+        return "burn";
+    }
+    return "nothing";
+}
+
+} // namespace
+
 const std::string& Character::get_name() const { return m_name; }
 void Character::set_name(const std::string& name) { m_name = name; }
 
@@ -15,6 +31,7 @@ int Character::get_mana() const { return m_stats.mana; }
 int Character::get_stamina() const { return m_stats.stamina; }
 int Character::get_gold() const { return m_stats.gold; }
 int Character::get_attack() const { return m_stats.attack; }
+StatusCondition Character::get_status_condition() const { return m_stats.statusCondition; }
 
 int Character::get_max_health() const { return m_stats.max_health; }
 int Character::get_max_mana() const { return m_stats.max_mana; }
@@ -72,6 +89,40 @@ void Character::add_gold(int amount) {
 
 void Character::set_attack(int value) {
     m_stats.attack = std::max(0, value);
+}
+
+bool Character::try_inflict_status(StatusCondition status, double chance) {
+    if (status == StatusCondition::None ||
+        m_stats.statusCondition != StatusCondition::None) {
+        return false;
+    }
+
+    chance = std::clamp(chance, 0.0, 1.0);
+    if (chance <= 0.0) {
+        return false;
+    }
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<double> roll(0.0, 1.0);
+
+    if (roll(gen) > chance) {
+        return false;
+    }
+
+    m_stats.statusCondition = status;
+    switch (status) {
+    case StatusCondition::None:
+        break;
+    case StatusCondition::Poison:
+        std::cout << get_name() << " was poisoned!" << std::endl;
+        break;
+    case StatusCondition::Burn:
+        std::cout << get_name() << " was set ablaze!" << std::endl;
+        break;
+    }
+
+    return true;
 }
 
 void Character::status_handler(StatusCondition status, int chanceOf) {
@@ -182,12 +233,22 @@ void Character::execute_attack(ActionData action, Character* target) {
         //check type of effect
         switch (effect.type) {
         case Damage:
-            //deal damage, display message
-            target->take_damage(effect.power);
-            std::cout << get_name() << " hit " << target->get_name() << " with " << action.name << " dealing " << effect.power << " damage!" << std::endl;
+        {
+            const int attack_bonus = (action.category == Physical) ? get_attack() : 0;
+            const int total_damage = effect.power + attack_bonus;
+            target->take_damage(total_damage);
+            std::cout << get_name() << " hit " << target->get_name()
+                      << " with " << action.name << " dealing "
+                      << total_damage << " damage!" << std::endl;
             break;
+        }
         case Status:
-            std::cout << "Whoops, no status was inflicted!\nI have to impliment this! I need to rewrite the status condition system :,)" << std::endl;
+            if (effect.status != StatusCondition::None &&
+                !target->try_inflict_status(effect.status, effect.afflictionChance)) {
+                std::cout << target->get_name() << " resisted "
+                          << StatusName(effect.status) << "."
+                          << std::endl;
+            }
             break;
         case Buff:
             //not implemented yet

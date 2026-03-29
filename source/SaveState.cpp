@@ -14,7 +14,7 @@
 namespace {
 
 constexpr const char* kSaveMagic = "RPGSAVE";
-constexpr int kSchemaVersion = 1;
+constexpr int kSchemaVersion = 2;
 constexpr const char* kSaveFileName = "save_slot_1.json";
 
 const std::array<std::filesystem::path, 3> kSaveDirs = {
@@ -140,6 +140,22 @@ nlohmann::json SerializeInventory(const Inventory& inventory) {
     return inventoryData;
 }
 
+nlohmann::json SerializeAdventure(const AdventureState& adventure) {
+    nlohmann::json adventureData;
+    adventureData["current_region"] = RegionName(adventure.current_region);
+    adventureData["story_stage"] = StoryStageName(adventure.story_stage);
+
+    nlohmann::json visited = nlohmann::json::array();
+    for (RegionId id : GetAllRegions()) {
+        if (HasVisited(adventure, id)) {
+            visited.push_back(RegionName(id));
+        }
+    }
+    adventureData["visited_regions"] = visited;
+
+    return adventureData;
+}
+
 Character::Stats ParseStats(const nlohmann::json& statsData,
                             const Character::Stats& fallback) {
     Character::Stats stats = fallback;
@@ -190,6 +206,45 @@ std::vector<InventoryItem> ParseInventoryItems(const nlohmann::json& itemsData) 
     return items;
 }
 
+AdventureState ParseAdventureState(const nlohmann::json& adventureData) {
+    AdventureState adventure = CreateNewAdventure();
+
+    if (adventureData.is_object()) {
+        RegionId region = adventure.current_region;
+        if (TryParseRegionId(
+                adventureData.value("current_region", std::string(RegionName(region))),
+                region)) {
+            adventure.current_region = region;
+        }
+
+        StoryStage stage = adventure.story_stage;
+        if (TryParseStoryStage(
+                adventureData.value("story_stage",
+                                    std::string(StoryStageName(stage))),
+                stage)) {
+            adventure.story_stage = stage;
+        }
+
+        adventure.visited.fill(false);
+        if (adventureData.contains("visited_regions") &&
+            adventureData["visited_regions"].is_array()) {
+            for (const auto& regionValue : adventureData["visited_regions"]) {
+                if (!regionValue.is_string()) {
+                    continue;
+                }
+
+                RegionId visitedRegion{};
+                if (TryParseRegionId(regionValue.get<std::string>(), visitedRegion)) {
+                    MarkVisited(adventure, visitedRegion);
+                }
+            }
+        }
+    }
+
+    MarkVisited(adventure, adventure.current_region);
+    return adventure;
+}
+
 SaveResult MigrateSaveToLatest(nlohmann::json& saveData) {
     int version = saveData.value("schema_version", 0);
 
@@ -208,6 +263,17 @@ SaveResult MigrateSaveToLatest(nlohmann::json& saveData) {
             continue;
         }
 
+        if (version == 1) {
+            if (!saveData["state"].contains("adventure") ||
+                !saveData["state"]["adventure"].is_object()) {
+                saveData["state"]["adventure"] = SerializeAdventure(CreateNewAdventure());
+            }
+
+            saveData["schema_version"] = 2;
+            version = 2;
+            continue;
+        }
+
         return {false, "Could not migrate this save to the latest schema."};
     }
 
@@ -216,7 +282,9 @@ SaveResult MigrateSaveToLatest(nlohmann::json& saveData) {
 
 } // namespace
 
-SaveResult SaveGameState(const Character& hero, const Inventory& inventory) {
+SaveResult SaveGameState(const Character& hero,
+                         const Inventory& inventory,
+                         const AdventureState& adventure) {
     const auto targetPathOpt = ResolveSavePathForWrite();
     if (!targetPathOpt.has_value()) {
         return {false, "Save failed: could not create a save directory."};
@@ -234,6 +302,7 @@ SaveResult SaveGameState(const Character& hero, const Inventory& inventory) {
     nlohmann::json state;
     state["hero"] = SerializeHero(hero);
     state["inventory"] = SerializeInventory(inventory);
+    state["adventure"] = SerializeAdventure(adventure);
     root["state"] = state;
 
     std::ofstream out(tempPath, std::ios::out | std::ios::trunc);
@@ -262,7 +331,9 @@ SaveResult SaveGameState(const Character& hero, const Inventory& inventory) {
     return {true, "Save complete. Your progress is tucked away safely."};
 }
 
-SaveResult LoadGameState(Character& hero, Inventory& inventory) {
+SaveResult LoadGameState(Character& hero,
+                         Inventory& inventory,
+                         AdventureState& adventure) {
     const auto sourcePathOpt = ResolveSavePathForRead();
     if (!sourcePathOpt.has_value()) {
         return {false, "Load failed: no save file found yet."};
@@ -308,10 +379,13 @@ SaveResult LoadGameState(Character& hero, Inventory& inventory) {
         ParseInventoryItems(inventoryData.value("items", nlohmann::json::array()));
     const std::string equippedWeaponName =
         inventoryData.value("equipped_weapon_name", std::string(""));
+    const AdventureState loadedAdventure =
+        ParseAdventureState(state.value("adventure", nlohmann::json::object()));
 
     hero = Character(heroName, loadedStats);
     inventory.load_items(loadedItems, equippedWeaponName);
     hero.set_attack(inventory.equipped_attack_bonus());
+    adventure = loadedAdventure;
 
     return {true, "Load complete. Party and inventory are back in action."};
 }
