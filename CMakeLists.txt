@@ -17,6 +17,16 @@ add_executable(rpg-game
     source/RPG_T_Menu.cpp
     source/SaveState.cpp
     source/SceneClass.cpp
+    source/Sound.cpp
     source/WorldMap.cpp
     source/character.cpp
 )
+
+if(APPLE)
+    find_library(AUDIOTOOLBOX_FRAMEWORK AudioToolbox REQUIRED)
+    find_library(COREFOUNDATION_FRAMEWORK CoreFoundation REQUIRED)
+    target_link_libraries(rpg-game PRIVATE
+        ${AUDIOTOOLBOX_FRAMEWORK}
+        ${COREFOUNDATION_FRAMEWORK}
+    )
+endif()

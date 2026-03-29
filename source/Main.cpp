@@ -9,6 +9,7 @@
 #include "GameItems.h"
 #include "Inventory.h"
 #include "SaveState.h"
+#include "Sound.h"
 #include "WorldMap.h"
 #include "character.h"
 
@@ -62,18 +63,11 @@ const char* danger_label(int danger_level)
     }
 }
 
-void ring_terminal_bell(int count)
-{
-    for (int i = 0; i < count; ++i) {
-        std::cout << '\a' << std::flush;
-    }
-}
-
-void errorSound() { ring_terminal_bell(2); }
-void magicSound() { ring_terminal_bell(1); }
-void menuSound() { ring_terminal_bell(1); }
-void attackSound() { ring_terminal_bell(1); }
-void endSound() { ring_terminal_bell(1); }
+void errorSound() { PlaySoundCue(SoundCue::Error); }
+void magicSound() { PlaySoundCue(SoundCue::Magic); }
+void menuSound() { PlaySoundCue(SoundCue::Menu); }
+void attackSound() { PlaySoundCue(SoundCue::Attack); }
+void endSound() { PlaySoundCue(SoundCue::End); }
 
 void wait_for_enter()
 {

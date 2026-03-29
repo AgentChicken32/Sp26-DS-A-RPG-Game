@@ -1,4 +1,5 @@
 #include "character.h"
+#include "Sound.h"
 
 Character::Character(std::string name, Stats stats)
     : m_name(std::move(name)), m_stats(stats) {
@@ -193,6 +194,7 @@ void Character::execute_attack(ActionData action, Character* target) {
     std::cout << dividerFlourish << std::endl;
 
     if (target == nullptr) {
+        PlaySoundCue(SoundCue::Error);
         std::cout << "No valid target selected." << std::endl;
         return;
     }
@@ -203,11 +205,16 @@ void Character::execute_attack(ActionData action, Character* target) {
     //subtract mana from total
     if (action.manaCost <= get_mana() && action.category == Magic) {
         spend_mana(action.manaCost);
+        PlaySoundCue(SoundCue::Magic);
         std::cout << get_name() << " cast " << action.name << " using " << action.manaCost << " points of mana." << std::endl;
     }
     else if (action.category == Magic) {//fail spell if not enough mana
+        PlaySoundCue(SoundCue::Error);
         std::cout << "The spell fizzled out in front of you! (Not enough mana)" << std::endl;
         return;
+    }
+    else {
+        PlaySoundCue(SoundCue::Attack);
     }
 
     //////////////////////////
@@ -219,6 +226,7 @@ void Character::execute_attack(ActionData action, Character* target) {
 
     //check if action will hit
     if (accuracyCheck(gen) > action.accuracy) {
+        PlaySoundCue(SoundCue::Error);
         std::cout << "The attack missed!" << std::endl;
         return;
     }
