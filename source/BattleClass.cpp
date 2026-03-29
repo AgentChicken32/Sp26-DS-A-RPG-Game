@@ -1,6 +1,7 @@
 #include "BattleClass.h"
 #include "character.h"
 #include "LootTable.h"
+#include "Sound.h"
 
 #include <algorithm>
 #include <iostream>
@@ -53,6 +54,7 @@ static Character* choose_enemy_target(vector<Character*>& enemies) {
             return alive[input - 1];
         }
 
+        PlaySoundCue(SoundCue::Error);
         cout << "Invalid input! Please try again.\n";
     }
 }
@@ -209,6 +211,7 @@ Battle::Battle(vector<Character*> good, vector<Character*> evil, Inventory* inve
 void Battle::Setup() {
     if (turnCounter == -1) {
         cout << "Stand guard, enemies appeared!\n";
+        PlaySoundCue(SoundCue::Attack);
         turnCounter = 0;
     }
 
@@ -238,9 +241,11 @@ void Battle::Setup() {
 
     if (result == 1) {
         cout << "You win!\n";
+        PlaySoundCue(SoundCue::End);
         AwardVictoryLoot();
     } else if (result == 2) {
         cout << "You lose!\n";
+        PlaySoundCue(SoundCue::Error);
     }
 }
 
@@ -281,6 +286,7 @@ void Battle::PlayerMenu(Character* npc) {
 1. ATTACK    2. MAGIC    3. ITEMS    4. ESCAPE
 )" << endl;
 
+    PlaySoundCue(SoundCue::Menu);
     input = read_int_choice();
 
     switch (input) {
@@ -301,10 +307,12 @@ void Battle::PlayerMenu(Character* npc) {
         cout << R"(
 You tried to run away, but it failed!
 )" << endl;
+        PlaySoundCue(SoundCue::Error);
         PlayerMenu(npc);
         break;
 
     default:
+        PlaySoundCue(SoundCue::Error);
         std::cout << "Invalid input! Try again!" << std::endl;
         PlayerMenu(npc);
     }
@@ -315,6 +323,7 @@ void Battle::PlayerAttack(Character* npc, Category type) {
     std::cout << dividerFlourish << std::endl;
     std::vector<int> options = npc->display_actions(type);
     if (options.empty()) {
+        PlaySoundCue(SoundCue::Error);
         std::cout << "No actions of that type are available.\n";
         PlayerMenu(npc);
         return;
@@ -333,6 +342,7 @@ void Battle::PlayerAttack(Character* npc, Category type) {
     else if (input < 1 || input > backOption) {
 
         std::cout << dividerFlourish << std::endl;
+        PlaySoundCue(SoundCue::Error);
         std::cout << "Invalid input! Please try again." << std::endl;
 
         PlayerAttack(npc, type);
@@ -343,6 +353,7 @@ void Battle::PlayerAttack(Character* npc, Category type) {
         const std::array<int, 6>& actionIds = npc->get_action_ids();
         const int actionIndex = options[input - 1];
         if (actionIndex < 0 || actionIndex >= static_cast<int>(actionIds.size())) {
+            PlaySoundCue(SoundCue::Error);
             std::cout << "Invalid action selection.\n";
             PlayerMenu(npc);
             return;
@@ -350,6 +361,7 @@ void Battle::PlayerAttack(Character* npc, Category type) {
 
         ActionData moveChoice = GetAction(actionIds[actionIndex]);
         if (moveChoice.name == "Unknown Action") {
+            PlaySoundCue(SoundCue::Error);
             std::cout << "That action is unavailable.\n";
             PlayerMenu(npc);
             return;
@@ -383,6 +395,7 @@ void Battle::EnemyTurn(Character* npc) {
     if (!heroes[idx]->is_alive()) return;
 
     const int dmg = damage(gen);
+    PlaySoundCue(SoundCue::Attack);
     heroes[idx]->take_damage(dmg);
 
     cout << "*-------------------------------------------------------*\n";
@@ -446,6 +459,7 @@ void Battle::AwardVictoryLoot() {
 
 void Battle::AccessInventory() {
     cout << "*-------------------------------------------------------*\n";
+    PlaySoundCue(SoundCue::Error);
     cout << "Inventory access is disabled in battle.\n";
     cout << "Use the Manage Inventory menu outside of combat.\n";
 }
