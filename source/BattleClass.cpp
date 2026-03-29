@@ -17,6 +17,7 @@ static int read_int_choice() {
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
         cout << "Please enter a number: ";
     }
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
     return choice;
 }
 
@@ -293,6 +294,7 @@ void Battle::PlayerMenu(Character* npc) {
         break;
     case 3:
         AccessInventory();
+        PlayerMenu(npc);
         break;
     case 4:
         std::cout << dividerFlourish << std::endl;

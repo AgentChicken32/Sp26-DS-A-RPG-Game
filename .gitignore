@@ -3,6 +3,8 @@
 ################################################################################
 
 /RPGProject
+/build/
+/cmake-build-*/
 
 # Runtime save-state artifacts
 /saves/

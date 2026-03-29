@@ -41,6 +41,7 @@ public:
     int  get_stamina() const;
     int  get_gold() const;
     int  get_attack() const;
+    StatusCondition get_status_condition() const;
 
     int  get_max_health() const;
     int  get_max_mana() const;
@@ -64,6 +65,7 @@ public:
     void add_gold(int amount);
 
     void set_attack(int value);
+    bool try_inflict_status(StatusCondition status, double chance);
 
     //How to use: status 0 is normal, 1 is poisoned, 2 is burning etc
     //chanceOf decides what the chance of contracting the status is other than normal, so an input of 1 is 100%, 5 is 20%, 25 is 4%, etc.

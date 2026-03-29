@@ -3,6 +3,7 @@
 #include <string>
 
 #include "Inventory.h"
+#include "WorldMap.h"
 #include "character.h"
 
 struct SaveResult {
@@ -10,5 +11,9 @@ struct SaveResult {
     std::string message;
 };
 
-SaveResult SaveGameState(const Character& hero, const Inventory& inventory);
-SaveResult LoadGameState(Character& hero, Inventory& inventory);
+SaveResult SaveGameState(const Character& hero,
+                         const Inventory& inventory,
+                         const AdventureState& adventure);
+SaveResult LoadGameState(Character& hero,
+                         Inventory& inventory,
+                         AdventureState& adventure);
