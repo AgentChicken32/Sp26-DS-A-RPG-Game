@@ -22,6 +22,7 @@ enum class RegionId {
     StormSpiralIsles,
     EasternMountainChain,
     BlinkeringIsle,
+    Casino,
     Count
 };
 

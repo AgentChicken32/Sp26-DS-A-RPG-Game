@@ -57,6 +57,9 @@ const std::array<RegionData, kRegionCount> kRegions = {{
     {RegionId::BlinkeringIsle, "Blinkering Isle",
      "A lonely island lighthouse blinking against the pull of spiral currents.",
      3},
+    {RegionId::Casino, "Casino",
+    "The best place in the world!",
+    0},
 }};
 
 } // namespace
@@ -117,6 +120,8 @@ std::vector<RegionId> GetConnectedRegions(RegionId id) {
                 RegionId::BlinkeringIsle};
     case RegionId::BlinkeringIsle:
         return {RegionId::EasternSea, RegionId::EasternMountainChain};
+    case RegionId::Casino:
+	    return {RegionId::PatomicCity};
     case RegionId::Count:
         break;
     }
@@ -142,6 +147,7 @@ const std::array<RegionId, kRegionCount>& GetAllRegions() {
         RegionId::StormSpiralIsles,
         RegionId::EasternMountainChain,
         RegionId::BlinkeringIsle,
+        RegionId::Casino
     }};
 
     return kAllRegions;

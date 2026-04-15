@@ -181,6 +181,7 @@ void print_world_map_and_journal(const AdventureState& adventure,
     print_region_line(RegionId::CentaurionPlaines, adventure);
     print_region_line(RegionId::SouthernExpanse, adventure);
     print_region_line(RegionId::ShrineOfTheWatchmaker, adventure);
+	print_region_line(RegionId::Casino, adventure);
 
     std::cout << "\nEastern Reach\n";
     print_region_line(RegionId::EasternSea, adventure);
