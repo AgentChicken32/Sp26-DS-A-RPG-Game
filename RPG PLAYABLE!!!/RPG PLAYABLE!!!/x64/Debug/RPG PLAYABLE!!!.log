@@ -1,0 +1,11 @@
+﻿  BattleClass.cpp
+  character.cpp
+  LootTable.cpp
+  Main.cpp
+  RPG_T_Menu.cpp
+  SaveState.cpp
+  SceneClass.cpp
+  Sound.cpp
+  WorldMap.cpp
+  Generating Code...
+  RPG PLAYABLE!!!.vcxproj -> C:\Users\andew\source\repos\RPG PLAYABLE!!!\x64\Debug\RPG PLAYABLE!!!.exe

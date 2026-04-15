@@ -90,35 +90,35 @@ void PlaySoundCue(SoundCue cue)
 #ifdef _WIN32
     switch (cue) {
     case SoundCue::Error:
-        if (play_windows_tone(180, 120) && play_windows_tone(120, 180)) {
+        if (Beep(180, 120) && Beep(120, 250)) {
             return;
         }
         ring_terminal_bell(2);
         return;
     case SoundCue::Magic:
-        if (play_windows_tone(523, 60) &&
-            play_windows_tone(659, 60) &&
-            play_windows_tone(784, 90)) {
+        if (Beep(523, 250) &&
+            Beep(659, 250) &&
+            Beep(784, 250)) {
             return;
         }
         ring_terminal_bell(1);
         return;
     case SoundCue::Menu:
-        if (play_windows_tone(784, 35)) {
+        if (Beep(784, 250)) {
             return;
         }
         ring_terminal_bell(1);
         return;
     case SoundCue::Attack:
-        if (play_windows_tone(220, 40) && play_windows_tone(180, 40)) {
+        if (Beep(220, 250) && Beep(180, 250)) {
             return;
         }
         ring_terminal_bell(1);
         return;
     case SoundCue::End:
-        if (play_windows_tone(784, 60) &&
-            play_windows_tone(523, 80) &&
-            play_windows_tone(392, 140)) {
+        if (Beep(784, 250) &&
+            Beep(523, 250) &&
+            Beep(392, 250)) {
             return;
         }
         ring_terminal_bell(1);

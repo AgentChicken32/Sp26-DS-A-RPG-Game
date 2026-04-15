@@ -20,7 +20,7 @@ add_executable(rpg-game
     source/Sound.cpp
     source/WorldMap.cpp
     source/character.cpp
-)
+ "source/Gambling.h" "source/Gambling.cpp")
 
 if(APPLE)
     find_library(AUDIOTOOLBOX_FRAMEWORK AudioToolbox REQUIRED)
