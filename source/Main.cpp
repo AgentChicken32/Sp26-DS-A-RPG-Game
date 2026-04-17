@@ -104,10 +104,26 @@ int random_int(int min_value, int max_value)
     return dist(game_rng());
 }
 
+std::size_t region_index(RegionId region)
+{
+    return static_cast<std::size_t>(region);
+}
+
 bool add_named_item(Inventory& inventory, const std::string& item_name)
 {
     const InventoryItem* item = GameItems::FindByName(item_name);
     return item && inventory.try_add_item(*item);
+}
+
+void advance_story(AdventureState& adventure, StoryStage next_stage)
+{
+    if (adventure.story_stage == next_stage) {
+        return;
+    }
+
+    adventure.story_stage = next_stage;
+    RefreshAllShopStock(adventure);
+    std::cout << "News travels fast. Every region's shop refreshes its shelves.\n";
 }
 
 void print_inventory_summary(const std::vector<ItemSummary>& summary,
@@ -167,6 +183,8 @@ void print_world_map_and_journal(const AdventureState& adventure,
               << " [" << danger_label(region.danger_level) << "]\n";
     std::cout << region.description << "\n";
     print_routes(adventure.current_region);
+    std::cout << "Local shop: "
+              << GetRegionShopData(adventure.current_region).name << "\n";
 
     for (RegionSection section : GetRegionSections()) {
         std::cout << "\n" << RegionSectionName(section) << "\n";
@@ -356,6 +374,95 @@ void manage_inventory(Inventory& inventory, Character& player)
     }
 }
 
+void visit_shop(AdventureState& adventure,
+                Character& hero,
+                Inventory& inventory)
+{
+    const RegionId region_id = adventure.current_region;
+    EnsureShopStockFresh(adventure, region_id);
+
+    const RegionData& region = GetRegionData(region_id);
+    const RegionShopData& shop = GetRegionShopData(region_id);
+    auto& stock_counts = adventure.shop_stock[region_index(region_id)];
+
+    bool in_shop = true;
+    while (in_shop) {
+        std::cout << "\n=== " << shop.name << " ===\n";
+        std::cout << "Location: " << region.name << "\n";
+        std::cout << "Gold: " << hero.get_gold()
+                  << " | Inventory: " << inventory.size() << "/"
+                  << inventory.capacity() << "\n";
+
+        for (std::size_t i = 0; i < shop.stock.size(); ++i) {
+            const ShopStockEntry& offer = shop.stock[i];
+            const InventoryItem* item = GameItems::FindByName(offer.item_name);
+
+            std::cout << (i + 1) << ") " << offer.item_name
+                      << " - " << offer.price << " gold"
+                      << " | Stock: " << stock_counts[i];
+            if (item) {
+                std::cout << " [" << item_type_label(item->type) << "]";
+                if (item->type == InventoryItem::Type::Weapon) {
+                    std::cout << " (+" << item->attack_bonus << " atk)";
+                }
+                if (!item->description.empty()) {
+                    std::cout << " - " << item->description;
+                }
+            }
+            std::cout << "\n";
+        }
+
+        std::cout << "0) Leave shop\nChoice: ";
+        const int choice = read_int_choice();
+        if (choice == 0 || choice == -1) {
+            in_shop = false;
+            continue;
+        }
+        if (choice < 1 || choice > static_cast<int>(shop.stock.size())) {
+            errorSound();
+            std::cout << "That is not on the counter.\n";
+            continue;
+        }
+
+        const std::size_t slot = static_cast<std::size_t>(choice - 1);
+        const ShopStockEntry& offer = shop.stock[slot];
+        const InventoryItem* item = GameItems::FindByName(offer.item_name);
+
+        if (!item) {
+            errorSound();
+            std::cout << "The shopkeeper cannot find that item.\n";
+            continue;
+        }
+        if (stock_counts[slot] <= 0) {
+            errorSound();
+            std::cout << offer.item_name << " is sold out until the story moves on.\n";
+            continue;
+        }
+        if (inventory.is_full()) {
+            errorSound();
+            std::cout << "Your pack is full. Make room before buying more.\n";
+            continue;
+        }
+        if (!hero.spend_gold(offer.price)) {
+            errorSound();
+            std::cout << "You need " << offer.price << " gold for "
+                      << offer.item_name << ".\n";
+            continue;
+        }
+        if (!inventory.try_add_item(*item)) {
+            hero.add_gold(offer.price);
+            errorSound();
+            std::cout << "Your pack is full. The shopkeeper returns your gold.\n";
+            continue;
+        }
+
+        --stock_counts[slot];
+        menuSound();
+        std::cout << "Bought " << offer.item_name << " for "
+                  << offer.price << " gold.\n";
+    }
+}
+
 bool travel_to_new_region(AdventureState& adventure)
 {
     const RegionId current = adventure.current_region;
@@ -529,7 +636,7 @@ bool explore_region(AdventureState& adventure,
             return false;
         }
 
-        adventure.story_stage = StoryStage::Epilogue;
+        advance_story(adventure, StoryStage::Epilogue);
         magicSound();
         std::cout << "\nWith the Tideglass Sigil raised high, the city's ward catches the storm and bends it harmlessly out to sea.\n";
         std::cout << "Patomic City's towers answer one another again, and the old roads of the world feel open for the first time in years.\n";
@@ -646,7 +753,7 @@ bool process_story_event(AdventureState& adventure,
             std::cout << "She adds a Potion to your satchel and points you toward the north road.\n";
         }
 
-        adventure.story_stage = StoryStage::SeekGlade;
+        advance_story(adventure, StoryStage::SeekGlade);
         wait_for_enter();
         return true;
 
@@ -665,7 +772,7 @@ bool process_story_event(AdventureState& adventure,
             std::cout << "The grove-seer presses an Herb into your palm for the journey.\n";
         }
 
-        adventure.story_stage = StoryStage::SeekShrine;
+        advance_story(adventure, StoryStage::SeekShrine);
         wait_for_enter();
         return true;
 
@@ -685,7 +792,7 @@ bool process_story_event(AdventureState& adventure,
             std::cout << "You claim an Iron Sword from the reliquary and belt it on at once.\n";
         }
 
-        adventure.story_stage = StoryStage::ReturnToPatomic;
+        advance_story(adventure, StoryStage::ReturnToPatomic);
         wait_for_enter();
         return true;
 
@@ -701,7 +808,7 @@ bool process_story_event(AdventureState& adventure,
         fully_restore(hero);
         std::cout << "You are restored to full strength before the final push.\n";
 
-        adventure.story_stage = StoryStage::DefendPatomic;
+        advance_story(adventure, StoryStage::DefendPatomic);
         wait_for_enter();
         return true;
 
@@ -733,10 +840,11 @@ void print_main_menu(const AdventureState& adventure,
               << "2) Travel\n"
               << "3) Explore current region\n"
               << "4) Rest\n"
-              << "5) Manage inventory\n"
-              << "6) Save journey\n"
-              << "7) Load journey\n"
-              << "8) Quit\n"
+              << "5) Visit local shop\n"
+              << "6) Manage inventory\n"
+              << "7) Save journey\n"
+              << "8) Load journey\n"
+              << "9) Quit\n"
               << "Choice: ";
 }
 
@@ -835,16 +943,20 @@ int main()
             break;
         case 5:
             menuSound();
+            visit_shop(adventure, hero, inventory);
+            break;
+        case 6:
+            menuSound();
             manage_inventory(inventory, hero);
             break;
-        case 6: {
+        case 7: {
             menuSound();
             const SaveResult result = SaveGameState(hero, inventory, adventure);
             std::cout << result.message << "\n";
             wait_for_enter();
             break;
         }
-        case 7: {
+        case 8: {
             menuSound();
             const SaveResult result = LoadGameState(hero, inventory, adventure);
             std::cout << result.message << "\n";
@@ -854,7 +966,7 @@ int main()
             wait_for_enter();
             break;
         }
-        case 8:
+        case 9:
         case -1:
             endSound();
             running = false;
