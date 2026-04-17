@@ -35,6 +35,7 @@ public:
 	void PlayerTurn(Character* npc); // player turn to choose attacks
 	void PlayerMenu(Character* npc);//player turn menu display
 	void EnemyTurn(Character* npc);  // enemy automatically decides what to do
+	void SmartEnemyTurn(Character* npc);
 
 	void PlayerAttack(Character* npc, Category type);//player attack menu display
 
