@@ -9,7 +9,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 add_executable(rpg-game
     source/ActionObject.cpp
     source/BattleClass.cpp
-    source/DialogueDatabase.cpp
+    source/DialogueTree.cpp
     source/GameItems.cpp
     source/Inventory.cpp
     source/LootTable.cpp

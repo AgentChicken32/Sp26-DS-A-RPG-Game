@@ -8,59 +8,128 @@ constexpr std::size_t RegionIndex(RegionId id) {
     return static_cast<std::size_t>(id);
 }
 
+constexpr std::array<RegionId, kRegionCount> BuildAllRegions() {
+    std::array<RegionId, kRegionCount> regions{};
+    for (std::size_t i = 0; i < regions.size(); ++i) {
+        regions[i] = static_cast<RegionId>(i);
+    }
+    return regions;
+}
+
+constexpr ExplorationItemProfile kDefaultFind{ "Potion", "Herb", 70 };
+constexpr ExplorationItemProfile kMountainFind{ "Iron Sword", "Potion", 35 };
+constexpr ExplorationItemProfile kPlainsFind{ "Training Dagger", "Herb", 35 };
+constexpr ExplorationItemProfile kSouthernFind{ "Herb", "Potion", 50 };
+
+const std::array<RegionId, kRegionCount> kAllRegions = BuildAllRegions();
+
+const std::array<RegionSection, kRegionSectionCount> kRegionSections = {{
+    RegionSection::North,
+    RegionSection::WesternMainland,
+    RegionSection::EasternReach
+}};
+
+// Keep these tables in RegionId enum order.
 const std::array<RegionData, kRegionCount> kRegions = {{
     {RegionId::IceCourt, "Ice Court",
      "A frozen fortress at the roof of the world, where the wind cuts like glass.",
-     4},
+     4, RegionSection::North,
+     {{ "Frostbound Exile", "Rime Wolf" }}, kDefaultFind},
     {RegionId::Gelt, "Gelt",
      "A lonely northern coast of traders and smugglers watching the icepack drift.",
-     1},
+     1, RegionSection::North,
+     {{ "Gelt Smuggler", "Harbor Knifehand" }}, kDefaultFind},
     {RegionId::NorthernWilds, "Northern Wilds",
      "Dense pine country full of old trails, hunters, and things that prefer twilight.",
-     2},
+     2, RegionSection::WesternMainland,
+     {{ "Wildfang Stalker", "Pinecloak Hunter" }}, kDefaultFind},
     {RegionId::River, "River",
      "The great inland artery where barges, ferries, and hungry reeds crowd the banks.",
-     1},
+     1, RegionSection::WesternMainland,
+     {{ "River Drake Whelp", "Reedway Bandit" }}, kDefaultFind},
     {RegionId::Mudlands, "Mudlands",
      "Sodden lowlands where every path shifts beneath your boots.",
-     3},
+     3, RegionSection::WesternMainland,
+     {{ "Bog Leech Alpha", "Mudlands Marauder" }}, kDefaultFind},
     {RegionId::Channel, "Channel",
      "A narrow split of water and stone that guides travelers toward the southern roads.",
-     1},
+     1, RegionSection::WesternMainland,
+     {{ "Channel Cutthroat", "Bridge Trollkin" }}, kDefaultFind},
     {RegionId::Glade, "Glade",
      "A hush of ancient trees and rune-marked standing stones that remember older bargains.",
-     2},
+     2, RegionSection::WesternMainland,
+     {{ "Bramble Warden", "Hollow Deer" }}, kSouthernFind},
     {RegionId::RuneMountains, "Rune Mountains",
      "Jagged peaks carved with glowing script and haunted by hard-bitten raiders.",
-     3},
+     3, RegionSection::WesternMainland,
+     {{ "Rune-Touched Raider", "Stonecut Marauder" }}, kMountainFind},
     {RegionId::PatomicCity, "Patomic City",
      "A harbor city of towers, gears, and restless markets built around an aging clockwork ward.",
-     0},
+     0, RegionSection::WesternMainland,
+     {{ "Clocktower Thief", "Dockside Ruffian" }}, kDefaultFind},
     {RegionId::CentaurionPlaines, "Centaurion Plaines",
      "Open grassland where the horizon runs forever and hoofbeats carry for miles.",
-     1},
+     1, RegionSection::WesternMainland,
+     {{ "Plains Skirmisher", "Hoofstep Ambusher" }}, kPlainsFind},
     {RegionId::SouthernExpanse, "Southern Expanse",
      "A warm and wind-beaten stretch of coast where the road begins to feel forgotten.",
-     2},
+     2, RegionSection::WesternMainland,
+     {{ "Dustglass Viper", "Coastline Reaver" }}, kSouthernFind},
     {RegionId::ShrineOfTheWatchmaker, "Shrine of the Watchmaker",
      "An old sea shrine whose mechanisms still whisper when the tides are quiet.",
-     0},
+     0, RegionSection::WesternMainland,
+     {{ "Broken Sentinel", "Tide Wraith" }}, kDefaultFind},
     {RegionId::EasternSea, "Eastern Sea",
      "A wide and mercurial sea, beautiful at dawn and dangerous by noon.",
-     3},
+     3, RegionSection::EasternReach,
+     {{ "Saltbound Corsair", "Sea-Glass Reaver" }}, kDefaultFind},
     {RegionId::StormSpiralIsles, "Storm / Spiral Isles",
      "A ring of storm-torn isles circling strange waters and stranger lights.",
-     4},
+     4, RegionSection::EasternReach,
+     {{ "Spiral Cultist", "Stormwake Harrier" }}, kDefaultFind},
     {RegionId::EasternMountainChain, "Eastern Mountain Chain",
      "Black coastal cliffs and knife-edged passes scoured by sea-born thunder.",
-     4},
+     4, RegionSection::EasternReach,
+     {{ "Storm Roc", "Cliffside Ravager" }}, kMountainFind},
     {RegionId::BlinkeringIsle, "Blinkering Isle",
      "A lonely island lighthouse blinking against the pull of spiral currents.",
-     3},
+     3, RegionSection::EasternReach,
+     {{ "Blinker Wisp", "Beacon Raider" }}, kDefaultFind},
     {RegionId::Casino, "Casino",
-    "The best place in the world!",
-    0},
+     "The best place in the world!",
+     0, RegionSection::WesternMainland,
+     {{ "Velvet Bouncer", "Loaded Dice Enforcer" }}, kDefaultFind},
 }};
+static_assert(kRegions.size() == kRegionCount);
+
+const std::array<std::vector<RegionId>, kRegionCount> kRegionConnections = {{
+    {RegionId::Gelt, RegionId::NorthernWilds},
+    {RegionId::IceCourt},
+    {RegionId::IceCourt, RegionId::River, RegionId::EasternSea},
+    {RegionId::NorthernWilds, RegionId::Mudlands, RegionId::Channel},
+    {RegionId::River, RegionId::RuneMountains},
+    {RegionId::River, RegionId::Glade},
+    {RegionId::Channel, RegionId::RuneMountains},
+    {RegionId::Glade, RegionId::Mudlands, RegionId::PatomicCity,
+     RegionId::EasternSea},
+    {RegionId::RuneMountains, RegionId::CentaurionPlaines,
+     RegionId::SouthernExpanse, RegionId::EasternSea, RegionId::Casino},
+    {RegionId::PatomicCity, RegionId::SouthernExpanse,
+     RegionId::EasternSea},
+    {RegionId::PatomicCity, RegionId::CentaurionPlaines,
+     RegionId::ShrineOfTheWatchmaker, RegionId::EasternSea},
+    {RegionId::SouthernExpanse},
+    {RegionId::NorthernWilds, RegionId::RuneMountains,
+     RegionId::PatomicCity, RegionId::CentaurionPlaines,
+     RegionId::SouthernExpanse, RegionId::StormSpiralIsles,
+     RegionId::EasternMountainChain, RegionId::BlinkeringIsle},
+    {RegionId::EasternSea, RegionId::EasternMountainChain},
+    {RegionId::EasternSea, RegionId::StormSpiralIsles,
+     RegionId::BlinkeringIsle},
+    {RegionId::EasternSea, RegionId::EasternMountainChain},
+    {RegionId::PatomicCity}
+}};
+static_assert(kRegionConnections.size() == kRegionCount);
 
 } // namespace
 
@@ -79,82 +148,37 @@ const RegionData& GetRegionData(RegionId id) {
 }
 
 std::vector<RegionId> GetConnectedRegions(RegionId id) {
-    switch (id) {
-    case RegionId::IceCourt:
-        return {RegionId::Gelt, RegionId::NorthernWilds};
-    case RegionId::Gelt:
-        return {RegionId::IceCourt};
-    case RegionId::NorthernWilds:
-        return {RegionId::IceCourt, RegionId::River, RegionId::EasternSea};
-    case RegionId::River:
-        return {RegionId::NorthernWilds, RegionId::Mudlands, RegionId::Channel};
-    case RegionId::Mudlands:
-        return {RegionId::River, RegionId::RuneMountains};
-    case RegionId::Channel:
-        return {RegionId::River, RegionId::Glade};
-    case RegionId::Glade:
-        return {RegionId::Channel, RegionId::RuneMountains};
-    case RegionId::RuneMountains:
-        return {RegionId::Glade, RegionId::Mudlands, RegionId::PatomicCity,
-                RegionId::EasternSea};
-    case RegionId::PatomicCity:
-        return {RegionId::RuneMountains, RegionId::CentaurionPlaines,
-                RegionId::SouthernExpanse, RegionId::EasternSea};
-    case RegionId::CentaurionPlaines:
-        return {RegionId::PatomicCity, RegionId::SouthernExpanse,
-                RegionId::EasternSea};
-    case RegionId::SouthernExpanse:
-        return {RegionId::PatomicCity, RegionId::CentaurionPlaines,
-                RegionId::ShrineOfTheWatchmaker, RegionId::EasternSea};
-    case RegionId::ShrineOfTheWatchmaker:
-        return {RegionId::SouthernExpanse};
-    case RegionId::EasternSea:
-        return {RegionId::NorthernWilds, RegionId::RuneMountains,
-                RegionId::PatomicCity, RegionId::CentaurionPlaines,
-                RegionId::SouthernExpanse, RegionId::StormSpiralIsles,
-                RegionId::EasternMountainChain, RegionId::BlinkeringIsle};
-    case RegionId::StormSpiralIsles:
-        return {RegionId::EasternSea, RegionId::EasternMountainChain};
-    case RegionId::EasternMountainChain:
-        return {RegionId::EasternSea, RegionId::StormSpiralIsles,
-                RegionId::BlinkeringIsle};
-    case RegionId::BlinkeringIsle:
-        return {RegionId::EasternSea, RegionId::EasternMountainChain};
-    case RegionId::Casino:
-	    return {RegionId::PatomicCity};
-    case RegionId::Count:
-        break;
+    const std::size_t index = RegionIndex(id);
+    if (index < kRegionConnections.size()) {
+        return kRegionConnections[index];
     }
-
     return {};
 }
 
 const std::array<RegionId, kRegionCount>& GetAllRegions() {
-    static const std::array<RegionId, kRegionCount> kAllRegions = {{
-        RegionId::IceCourt,
-        RegionId::Gelt,
-        RegionId::NorthernWilds,
-        RegionId::River,
-        RegionId::Mudlands,
-        RegionId::Channel,
-        RegionId::Glade,
-        RegionId::RuneMountains,
-        RegionId::PatomicCity,
-        RegionId::CentaurionPlaines,
-        RegionId::SouthernExpanse,
-        RegionId::ShrineOfTheWatchmaker,
-        RegionId::EasternSea,
-        RegionId::StormSpiralIsles,
-        RegionId::EasternMountainChain,
-        RegionId::BlinkeringIsle,
-        RegionId::Casino
-    }};
-
     return kAllRegions;
+}
+
+const std::array<RegionSection, kRegionSectionCount>& GetRegionSections() {
+    return kRegionSections;
 }
 
 const char* RegionName(RegionId id) {
     return GetRegionData(id).name;
+}
+
+const char* RegionSectionName(RegionSection section) {
+    switch (section) {
+    case RegionSection::North:
+        return "North";
+    case RegionSection::WesternMainland:
+        return "Western Mainland";
+    case RegionSection::EasternReach:
+        return "Eastern Reach";
+    case RegionSection::Count:
+        break;
+    }
+    return "Unknown";
 }
 
 const char* StoryStageName(StoryStage stage) {

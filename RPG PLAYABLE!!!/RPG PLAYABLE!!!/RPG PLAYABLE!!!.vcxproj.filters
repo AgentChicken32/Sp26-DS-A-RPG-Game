@@ -24,7 +24,10 @@
     <ClCompile Include="..\..\Sp26-DS-A-RPG-Game\source\character.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sp26-DS-A-RPG-Game\source\DialogueDatabase.cpp">
+    <ClCompile Include="..\..\Sp26-DS-A-RPG-Game\source\DialogueTree.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sp26-DS-A-RPG-Game\source\Gambling.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sp26-DS-A-RPG-Game\source\GameItems.cpp">
@@ -65,7 +68,10 @@
     <ClInclude Include="..\..\Sp26-DS-A-RPG-Game\source\character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sp26-DS-A-RPG-Game\source\DialogueDatabase.h">
+    <ClInclude Include="..\..\Sp26-DS-A-RPG-Game\source\DialogueTree.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sp26-DS-A-RPG-Game\source\Gambling.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sp26-DS-A-RPG-Game\source\GameItems.h">
@@ -94,7 +100,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\Sp26-DS-A-RPG-Game\source\Dialogue.json" />
     <None Include="..\..\Sp26-DS-A-RPG-Game\source\Exe" />
   </ItemGroup>
 </Project>

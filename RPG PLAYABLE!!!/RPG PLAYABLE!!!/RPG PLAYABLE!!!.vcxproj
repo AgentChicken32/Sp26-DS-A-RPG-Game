@@ -130,7 +130,8 @@
     <ClCompile Include="..\..\Sp26-DS-A-RPG-Game\source\ActionObject.cpp" />
     <ClCompile Include="..\..\Sp26-DS-A-RPG-Game\source\BattleClass.cpp" />
     <ClCompile Include="..\..\Sp26-DS-A-RPG-Game\source\character.cpp" />
-    <ClCompile Include="..\..\Sp26-DS-A-RPG-Game\source\DialogueDatabase.cpp" />
+    <ClCompile Include="..\..\Sp26-DS-A-RPG-Game\source\DialogueTree.cpp" />
+    <ClCompile Include="..\..\Sp26-DS-A-RPG-Game\source\Gambling.cpp" />
     <ClCompile Include="..\..\Sp26-DS-A-RPG-Game\source\GameItems.cpp" />
     <ClCompile Include="..\..\Sp26-DS-A-RPG-Game\source\Inventory.cpp" />
     <ClCompile Include="..\..\Sp26-DS-A-RPG-Game\source\LootTable.cpp" />
@@ -145,7 +146,8 @@
     <ClInclude Include="..\..\Sp26-DS-A-RPG-Game\source\ActionObject.h" />
     <ClInclude Include="..\..\Sp26-DS-A-RPG-Game\source\BattleClass.h" />
     <ClInclude Include="..\..\Sp26-DS-A-RPG-Game\source\character.h" />
-    <ClInclude Include="..\..\Sp26-DS-A-RPG-Game\source\DialogueDatabase.h" />
+    <ClInclude Include="..\..\Sp26-DS-A-RPG-Game\source\DialogueTree.h" />
+    <ClInclude Include="..\..\Sp26-DS-A-RPG-Game\source\Gambling.h" />
     <ClInclude Include="..\..\Sp26-DS-A-RPG-Game\source\GameItems.h" />
     <ClInclude Include="..\..\Sp26-DS-A-RPG-Game\source\Inventory.h" />
     <ClInclude Include="..\..\Sp26-DS-A-RPG-Game\source\json.hpp" />
@@ -156,7 +158,6 @@
     <ClInclude Include="..\..\Sp26-DS-A-RPG-Game\source\WorldMap.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\Sp26-DS-A-RPG-Game\source\Dialogue.json" />
     <None Include="..\..\Sp26-DS-A-RPG-Game\source\Exe" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
