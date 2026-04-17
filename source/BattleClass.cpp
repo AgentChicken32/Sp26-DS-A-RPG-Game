@@ -407,6 +407,21 @@ void Battle::EnemyTurn(Character* npc) {
     cout << heroes[idx]->get_name() << " has " << heroes[idx]->get_health() << " health left!\n";
 }
 
+void Battle::SmartEnemyTurn(Character* npc) {
+    if (heroes.empty()) return;
+
+    //find a target
+
+    //check if my health is less than 50, heal if I can
+
+    //check if any of my attacks can kill target
+
+    //check if enemy if enemy is significantly stronger than me, use buff or debuff if I can
+
+    //else attack
+    
+}
+
 int Battle::CheckForWinLoss() {
     enemies.erase(
         std::remove_if(enemies.begin(), enemies.end(),
@@ -459,9 +474,7 @@ void Battle::AwardVictoryLoot() {
 
 void Battle::AccessInventory() {
     cout << "*-------------------------------------------------------*\n";
-    PlaySoundCue(SoundCue::Error);
-    cout << "Inventory access is disabled in battle.\n";
-    cout << "Use the Manage Inventory menu outside of combat.\n";
+    partyInventory->manage_inventory(*partyInventory, *heroes[0]);
 }
 
 void Battle::MenuOptions() {

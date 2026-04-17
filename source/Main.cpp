@@ -184,7 +184,7 @@ void print_world_map_and_journal(const AdventureState& adventure,
               << " | Inventory: " << inventory.size() << "/"
               << inventory.capacity() << "\n";
 }
-
+/*
 void manage_inventory(Inventory& inventory, Character& player)
 {
     bool in_menu = true;
@@ -355,7 +355,7 @@ void manage_inventory(Inventory& inventory, Character& player)
         }
     }
 }
-
+*/
 bool travel_to_new_region(AdventureState& adventure)
 {
     const RegionId current = adventure.current_region;
@@ -540,7 +540,7 @@ bool explore_region(AdventureState& adventure,
     const RegionData& region = GetRegionData(adventure.current_region);
 
     if (region.danger_level == 0) {
-        if (adventure.current_region == RegionId::Casino) {
+        if (adventure.current_region == RegionId:: Casino) {
             Gambling::showMenu(hero.get_gold_ref());
             wait_for_enter();
             return true;
@@ -835,7 +835,7 @@ int main()
             break;
         case 5:
             menuSound();
-            manage_inventory(inventory, hero);
+            inventory.manage_inventory(inventory, hero);
             break;
         case 6: {
             menuSound();
