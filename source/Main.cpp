@@ -463,6 +463,96 @@ void visit_shop(AdventureState& adventure,
     }
 }
 */
+
+void visit_shop(AdventureState& adventure,
+    Character& hero,
+    Inventory& inventory)
+{
+    const RegionId region_id = adventure.current_region;
+    EnsureShopStockFresh(adventure, region_id);
+
+    const RegionData& region = GetRegionData(region_id);
+    const RegionShopData& shop = GetRegionShopData(region_id);
+    auto& stock_counts = adventure.shop_stock[region_index(region_id)];
+
+    bool in_shop = true;
+    while (in_shop) {
+        std::cout << "\n=== " << shop.name << " ===\n";
+        std::cout << "Location: " << region.name << "\n";
+        std::cout << "Gold: " << hero.get_gold()
+            << " | Inventory: " << inventory.size() << "/"
+            << inventory.capacity() << "\n";
+
+        for (std::size_t i = 0; i < shop.stock.size(); ++i) {
+            const ShopStockEntry& offer = shop.stock[i];
+            const InventoryItem* item = GameItems::FindByName(offer.item_name);
+
+            std::cout << (i + 1) << ") " << offer.item_name
+                << " - " << offer.price << " gold"
+                << " | Stock: " << stock_counts[i];
+            if (item) {
+                std::cout << " [" << item_type_label(item->type) << "]";
+                if (item->type == InventoryItem::Type::Weapon) {
+                    std::cout << " (+" << item->attack_bonus << " atk)";
+                }
+                if (!item->description.empty()) {
+                    std::cout << " - " << item->description;
+                }
+            }
+            std::cout << "\n";
+        }
+
+        std::cout << "0) Leave shop\nChoice: ";
+        const int choice = read_int_choice();
+        if (choice == 0 || choice == -1) {
+            in_shop = false;
+            continue;
+        }
+        if (choice < 1 || choice > static_cast<int>(shop.stock.size())) {
+            errorSound();
+            std::cout << "That is not on the counter.\n";
+            continue;
+        }
+
+        const std::size_t slot = static_cast<std::size_t>(choice - 1);
+        const ShopStockEntry& offer = shop.stock[slot];
+        const InventoryItem* item = GameItems::FindByName(offer.item_name);
+
+        if (!item) {
+            errorSound();
+            std::cout << "The shopkeeper cannot find that item.\n";
+            continue;
+        }
+        if (stock_counts[slot] <= 0) {
+            errorSound();
+            std::cout << offer.item_name << " is sold out until the story moves on.\n";
+            continue;
+        }
+        if (inventory.is_full()) {
+            errorSound();
+            std::cout << "Your pack is full. Make room before buying more.\n";
+            continue;
+        }
+        if (!hero.spend_gold(offer.price)) {
+            errorSound();
+            std::cout << "You need " << offer.price << " gold for "
+                << offer.item_name << ".\n";
+            continue;
+        }
+        if (!inventory.try_add_item(*item)) {
+            hero.add_gold(offer.price);
+            errorSound();
+            std::cout << "Your pack is full. The shopkeeper returns your gold.\n";
+            continue;
+        }
+
+        --stock_counts[slot];
+        menuSound();
+        std::cout << "Bought " << offer.item_name << " for "
+            << offer.price << " gold.\n";
+    }
+}
+
 bool travel_to_new_region(AdventureState& adventure)
 {
     const RegionId current = adventure.current_region;
@@ -947,7 +1037,7 @@ int main()
             break;
         case 6:
             menuSound();
-            manage_inventory(inventory, hero);
+            inventory.manage_inventory(inventory, hero);
             break;
         case 7: {
             menuSound();
