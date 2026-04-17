@@ -102,6 +102,71 @@ const std::array<RegionData, kRegionCount> kRegions = {{
 }};
 static_assert(kRegions.size() == kRegionCount);
 
+constexpr std::array<ShopStockEntry, kShopSlotCount> ShopStock(
+    ShopStockEntry first,
+    ShopStockEntry second,
+    ShopStockEntry third,
+    ShopStockEntry fourth)
+{
+    return {{ first, second, third, fourth }};
+}
+
+// Keep this table in RegionId enum order.
+const std::array<RegionShopData, kRegionCount> kRegionShops = {{
+    {"Frostgate Provisioner",
+     ShopStock({"Potion", 8, 3}, {"Herb", 3, 4},
+               {"Wooden Sword", 15, 1}, {"Iron Sword", 40, 1})},
+    {"Gelt Dock Exchange",
+     ShopStock({"Potion", 6, 4}, {"Herb", 2, 5},
+               {"Training Dagger", 11, 1}, {"Wooden Sword", 13, 1})},
+    {"Pinewatch Outfitter",
+     ShopStock({"Potion", 7, 3}, {"Herb", 2, 6},
+               {"Training Dagger", 10, 2}, {"Wooden Sword", 14, 1})},
+    {"Riverbend Supply",
+     ShopStock({"Potion", 6, 4}, {"Herb", 3, 5},
+               {"Training Dagger", 12, 1}, {"Iron Sword", 35, 1})},
+    {"Mudlands Pole-and-Pack",
+     ShopStock({"Potion", 8, 4}, {"Herb", 4, 4},
+               {"Training Dagger", 14, 1}, {"Iron Sword", 38, 1})},
+    {"Channel Ferry Stall",
+     ShopStock({"Potion", 6, 3}, {"Herb", 3, 4},
+               {"Wooden Sword", 13, 1}, {"Training Dagger", 12, 1})},
+    {"Glade Root Market",
+     ShopStock({"Potion", 7, 3}, {"Herb", 2, 7},
+               {"Training Dagger", 11, 1}, {"Iron Sword", 36, 1})},
+    {"Rune Mountain Quartermaster",
+     ShopStock({"Potion", 9, 3}, {"Herb", 4, 3},
+               {"Iron Sword", 32, 2}, {"Training Dagger", 13, 1})},
+    {"Patomic Clockmarket",
+     ShopStock({"Potion", 5, 5}, {"Herb", 2, 5},
+               {"Wooden Sword", 12, 2}, {"Training Dagger", 10, 1})},
+    {"Centaurion Roadside Goods",
+     ShopStock({"Potion", 6, 4}, {"Herb", 2, 6},
+               {"Training Dagger", 9, 2}, {"Wooden Sword", 13, 1})},
+    {"Southern Expanse Caravan",
+     ShopStock({"Potion", 7, 4}, {"Herb", 3, 5},
+               {"Training Dagger", 12, 1}, {"Iron Sword", 34, 1})},
+    {"Watchmaker Shrine Almonry",
+     ShopStock({"Potion", 5, 3}, {"Herb", 1, 6},
+               {"Wooden Sword", 11, 1}, {"Iron Sword", 33, 1})},
+    {"Eastern Sea Deck Locker",
+     ShopStock({"Potion", 8, 4}, {"Herb", 4, 4},
+               {"Training Dagger", 14, 1}, {"Iron Sword", 37, 1})},
+    {"Storm-Spiral Salvage",
+     ShopStock({"Potion", 10, 4}, {"Herb", 5, 3},
+               {"Training Dagger", 15, 1}, {"Iron Sword", 42, 1})},
+    {"Eastern Chain Forge",
+     ShopStock({"Potion", 9, 3}, {"Herb", 4, 4},
+               {"Iron Sword", 30, 2}, {"Training Dagger", 13, 1})},
+    {"Blinkering Beacon Stores",
+     ShopStock({"Potion", 8, 3}, {"Herb", 3, 5},
+               {"Wooden Sword", 14, 1}, {"Iron Sword", 36, 1})},
+    {"Casino Cashier Cage",
+     ShopStock({"Potion", 9, 3}, {"Herb", 4, 4},
+               {"Training Dagger", 16, 1}, {"Iron Sword", 45, 1})}
+}};
+static_assert(kRegionShops.size() == kRegionCount);
+
 const std::array<std::vector<RegionId>, kRegionCount> kRegionConnections = {{
     {RegionId::Gelt, RegionId::NorthernWilds},
     {RegionId::IceCourt},
@@ -135,6 +200,8 @@ static_assert(kRegionConnections.size() == kRegionCount);
 
 AdventureState CreateNewAdventure() {
     AdventureState adventure;
+    adventure.shop_refresh_stage.fill(-1);
+    RefreshAllShopStock(adventure);
     MarkVisited(adventure, adventure.current_region);
     return adventure;
 }
@@ -145,6 +212,14 @@ const RegionData& GetRegionData(RegionId id) {
         throw std::out_of_range("Unknown region id");
     }
     return kRegions[index];
+}
+
+const RegionShopData& GetRegionShopData(RegionId id) {
+    const std::size_t index = RegionIndex(id);
+    if (index >= kRegionShops.size()) {
+        throw std::out_of_range("Unknown region shop id");
+    }
+    return kRegionShops[index];
 }
 
 std::vector<RegionId> GetConnectedRegions(RegionId id) {
@@ -179,6 +254,10 @@ const char* RegionSectionName(RegionSection section) {
         break;
     }
     return "Unknown";
+}
+
+int StoryStageIndex(StoryStage stage) {
+    return static_cast<int>(stage);
 }
 
 const char* StoryStageName(StoryStage stage) {
@@ -253,4 +332,28 @@ bool HasVisited(const AdventureState& adventure, RegionId id) {
 
 void MarkVisited(AdventureState& adventure, RegionId id) {
     adventure.visited[RegionIndex(id)] = true;
+}
+
+void RefreshShopStock(AdventureState& adventure, RegionId id) {
+    const std::size_t region = RegionIndex(id);
+    const RegionShopData& shop = GetRegionShopData(id);
+
+    for (std::size_t slot = 0; slot < kShopSlotCount; ++slot) {
+        adventure.shop_stock[region][slot] = shop.stock[slot].base_quantity;
+    }
+    adventure.shop_refresh_stage[region] = StoryStageIndex(adventure.story_stage);
+}
+
+void RefreshAllShopStock(AdventureState& adventure) {
+    for (RegionId id : GetAllRegions()) {
+        RefreshShopStock(adventure, id);
+    }
+}
+
+void EnsureShopStockFresh(AdventureState& adventure, RegionId id) {
+    const std::size_t region = RegionIndex(id);
+    if (adventure.shop_refresh_stage[region] !=
+        StoryStageIndex(adventure.story_stage)) {
+        RefreshShopStock(adventure, id);
+    }
 }

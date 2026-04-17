@@ -14,8 +14,8 @@ const std::vector<InventoryItem>& Catalog() {
          "Light and quick."},
         {"Potion", InventoryItem::Type::Consumable, 0, 5,
          "Restores a little health."},
-        {"Herb", InventoryItem::Type::Misc, 0, 1,
-         "Common ingredient."}
+        {"Herb", InventoryItem::Type::Consumable, 0, 1,
+         "Restores a little mana."}
     };
 
     return kCatalog;
