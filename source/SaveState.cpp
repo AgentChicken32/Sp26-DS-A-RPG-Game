@@ -1,5 +1,6 @@
 #include "SaveState.h"
 
+#include <algorithm>
 #include <array>
 #include <chrono>
 #include <ctime>
@@ -9,12 +10,13 @@
 #include <string>
 #include <vector>
 
+#include "GameItems.h"
 #include "json.hpp"
 
 namespace {
 
 constexpr const char* kSaveMagic = "RPGSAVE";
-constexpr int kSchemaVersion = 2;
+constexpr int kSchemaVersion = 3;
 constexpr const char* kSaveFileName = "save_slot_1.json";
 
 const std::array<std::filesystem::path, 3> kSaveDirs = {
@@ -140,6 +142,28 @@ nlohmann::json SerializeInventory(const Inventory& inventory) {
     return inventoryData;
 }
 
+nlohmann::json SerializeShops(const AdventureState& adventure) {
+    nlohmann::json shops = nlohmann::json::array();
+
+    for (RegionId id : GetAllRegions()) {
+        const std::size_t region = static_cast<std::size_t>(id);
+
+        nlohmann::json shopData;
+        shopData["region"] = RegionName(id);
+        shopData["refresh_stage"] = adventure.shop_refresh_stage[region];
+
+        nlohmann::json stock = nlohmann::json::array();
+        for (std::size_t slot = 0; slot < kShopSlotCount; ++slot) {
+            stock.push_back(adventure.shop_stock[region][slot]);
+        }
+        shopData["stock"] = stock;
+
+        shops.push_back(shopData);
+    }
+
+    return shops;
+}
+
 nlohmann::json SerializeAdventure(const AdventureState& adventure) {
     nlohmann::json adventureData;
     adventureData["current_region"] = RegionName(adventure.current_region);
@@ -152,6 +176,7 @@ nlohmann::json SerializeAdventure(const AdventureState& adventure) {
         }
     }
     adventureData["visited_regions"] = visited;
+    adventureData["shops"] = SerializeShops(adventure);
 
     return adventureData;
 }
@@ -196,14 +221,53 @@ std::vector<InventoryItem> ParseInventoryItems(const nlohmann::json& itemsData) 
 
         InventoryItem item;
         item.name = itemData.value("name", std::string("Unknown Item"));
-        item.type = ParseItemTypeName(itemData.value("type", std::string("Misc")));
-        item.attack_bonus = itemData.value("attack_bonus", 0);
-        item.value = itemData.value("value", 0);
-        item.description = itemData.value("description", std::string(""));
+        if (const InventoryItem* catalogItem = GameItems::FindByName(item.name)) {
+            item = *catalogItem;
+        } else {
+            item.type = ParseItemTypeName(itemData.value("type", std::string("Misc")));
+            item.attack_bonus = itemData.value("attack_bonus", 0);
+            item.value = itemData.value("value", 0);
+            item.description = itemData.value("description", std::string(""));
+        }
         items.push_back(item);
     }
 
     return items;
+}
+
+void ParseShopState(const nlohmann::json& shopsData, AdventureState& adventure) {
+    if (!shopsData.is_array()) {
+        return;
+    }
+
+    for (const auto& shopData : shopsData) {
+        if (!shopData.is_object()) {
+            continue;
+        }
+
+        RegionId region{};
+        if (!TryParseRegionId(shopData.value("region", std::string("")), region)) {
+            continue;
+        }
+
+        const std::size_t regionIndex = static_cast<std::size_t>(region);
+        adventure.shop_refresh_stage[regionIndex] =
+            shopData.value("refresh_stage", -1);
+
+        const nlohmann::json stockData =
+            shopData.value("stock", nlohmann::json::array());
+        const RegionShopData& shop = GetRegionShopData(region);
+        for (std::size_t slot = 0; slot < kShopSlotCount; ++slot) {
+            int quantity = shop.stock[slot].base_quantity;
+            if (stockData.is_array() && slot < stockData.size() &&
+                stockData[slot].is_number_integer()) {
+                quantity = stockData[slot].get<int>();
+            }
+
+            adventure.shop_stock[regionIndex][slot] =
+                std::clamp(quantity, 0, shop.stock[slot].base_quantity);
+        }
+    }
 }
 
 AdventureState ParseAdventureState(const nlohmann::json& adventureData) {
@@ -239,9 +303,16 @@ AdventureState ParseAdventureState(const nlohmann::json& adventureData) {
                 }
             }
         }
+
+        if (adventureData.contains("shops")) {
+            ParseShopState(adventureData["shops"], adventure);
+        }
     }
 
     MarkVisited(adventure, adventure.current_region);
+    for (RegionId id : GetAllRegions()) {
+        EnsureShopStockFresh(adventure, id);
+    }
     return adventure;
 }
 
@@ -271,6 +342,12 @@ SaveResult MigrateSaveToLatest(nlohmann::json& saveData) {
 
             saveData["schema_version"] = 2;
             version = 2;
+            continue;
+        }
+
+        if (version == 2) {
+            saveData["schema_version"] = 3;
+            version = 3;
             continue;
         }
 
