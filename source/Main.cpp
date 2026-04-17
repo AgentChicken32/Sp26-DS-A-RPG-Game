@@ -6,13 +6,14 @@
 
 #include "ActionObject.h"
 #include "BattleClass.h"
+#include "DialogueTree.h"
+#include "Gambling.h"
 #include "GameItems.h"
 #include "Inventory.h"
 #include "SaveState.h"
 #include "Sound.h"
 #include "WorldMap.h"
 #include "character.h"
-#include "Gambling.h"
 
 namespace {
 
@@ -167,28 +168,14 @@ void print_world_map_and_journal(const AdventureState& adventure,
     std::cout << region.description << "\n";
     print_routes(adventure.current_region);
 
-    std::cout << "\nNorth\n";
-    print_region_line(RegionId::IceCourt, adventure);
-    print_region_line(RegionId::Gelt, adventure);
-
-    std::cout << "\nWestern Mainland\n";
-    print_region_line(RegionId::NorthernWilds, adventure);
-    print_region_line(RegionId::River, adventure);
-    print_region_line(RegionId::Mudlands, adventure);
-    print_region_line(RegionId::Channel, adventure);
-    print_region_line(RegionId::Glade, adventure);
-    print_region_line(RegionId::RuneMountains, adventure);
-    print_region_line(RegionId::PatomicCity, adventure);
-    print_region_line(RegionId::CentaurionPlaines, adventure);
-    print_region_line(RegionId::SouthernExpanse, adventure);
-    print_region_line(RegionId::ShrineOfTheWatchmaker, adventure);
-	print_region_line(RegionId::Casino, adventure);
-
-    std::cout << "\nEastern Reach\n";
-    print_region_line(RegionId::EasternSea, adventure);
-    print_region_line(RegionId::StormSpiralIsles, adventure);
-    print_region_line(RegionId::EasternMountainChain, adventure);
-    print_region_line(RegionId::BlinkeringIsle, adventure);
+    for (RegionSection section : GetRegionSections()) {
+        std::cout << "\n" << RegionSectionName(section) << "\n";
+        for (RegionId region_id : GetAllRegions()) {
+            if (GetRegionData(region_id).section == section) {
+                print_region_line(region_id, adventure);
+            }
+        }
+    }
 
     std::cout << "\nParty Status\n";
     std::cout << "Health: " << hero.get_health() << "/" << hero.get_max_health()
@@ -411,117 +398,59 @@ bool travel_to_new_region(AdventureState& adventure)
     return true;
 }
 
+void run_dialogue_tree(const DialogueTree& dialogue)
+{
+    if (!dialogue.root) {
+        return;
+    }
+
+    menuSound();
+    std::cout << "\n=== Conversation: " << dialogue.npc_name << " ===\n";
+    std::cout << dialogue.encounter_text << "\n";
+
+    const DialogueNode* current = dialogue.root.get();
+    while (current) {
+        std::cout << "\n" << current->speaker << ": " << current->line << "\n";
+
+        if (current->choices.empty()) {
+            std::cout << "The conversation ends.\n";
+            return;
+        }
+
+        for (size_t i = 0; i < current->choices.size(); ++i) {
+            std::cout << (i + 1) << ") " << current->choices[i].text << "\n";
+        }
+        std::cout << "0) End conversation\nChoice: ";
+
+        const int choice = read_int_choice();
+        if (choice == 0 || choice == -1) {
+            std::cout << "You end the conversation.\n";
+            return;
+        }
+        if (choice < 1 ||
+            choice > static_cast<int>(current->choices.size())) {
+            errorSound();
+            std::cout << "Invalid choice.\n";
+            continue;
+        }
+
+        menuSound();
+        current = current->choices[choice - 1].next.get();
+    }
+}
+
+void run_random_npc_dialogue(RegionId region)
+{
+    DialogueTree dialogue =
+        CreateRandomNpcDialogueTree(region, random_int(0, 100000));
+    run_dialogue_tree(dialogue);
+}
+
 struct EncounterSpec {
     std::string name;
     std::string opening_line;
     Character::Stats stats;
 };
-
-std::string random_enemy_name(RegionId region)
-{
-    switch (region) {
-    case RegionId::IceCourt: {
-        static const std::vector<std::string> names = {
-            "Frostbound Exile", "Rime Wolf"
-        };
-        return names[random_int(0, static_cast<int>(names.size()) - 1)];
-    }
-    case RegionId::Gelt: {
-        static const std::vector<std::string> names = {
-            "Gelt Smuggler", "Harbor Knifehand"
-        };
-        return names[random_int(0, static_cast<int>(names.size()) - 1)];
-    }
-    case RegionId::NorthernWilds: {
-        static const std::vector<std::string> names = {
-            "Wildfang Stalker", "Pinecloak Hunter"
-        };
-        return names[random_int(0, static_cast<int>(names.size()) - 1)];
-    }
-    case RegionId::River: {
-        static const std::vector<std::string> names = {
-            "River Drake Whelp", "Reedway Bandit"
-        };
-        return names[random_int(0, static_cast<int>(names.size()) - 1)];
-    }
-    case RegionId::Mudlands: {
-        static const std::vector<std::string> names = {
-            "Bog Leech Alpha", "Mudlands Marauder"
-        };
-        return names[random_int(0, static_cast<int>(names.size()) - 1)];
-    }
-    case RegionId::Channel: {
-        static const std::vector<std::string> names = {
-            "Channel Cutthroat", "Bridge Trollkin"
-        };
-        return names[random_int(0, static_cast<int>(names.size()) - 1)];
-    }
-    case RegionId::Glade: {
-        static const std::vector<std::string> names = {
-            "Bramble Warden", "Hollow Deer"
-        };
-        return names[random_int(0, static_cast<int>(names.size()) - 1)];
-    }
-    case RegionId::RuneMountains: {
-        static const std::vector<std::string> names = {
-            "Rune-Touched Raider", "Stonecut Marauder"
-        };
-        return names[random_int(0, static_cast<int>(names.size()) - 1)];
-    }
-    case RegionId::PatomicCity: {
-        static const std::vector<std::string> names = {
-            "Clocktower Thief", "Dockside Ruffian"
-        };
-        return names[random_int(0, static_cast<int>(names.size()) - 1)];
-    }
-    case RegionId::CentaurionPlaines: {
-        static const std::vector<std::string> names = {
-            "Plains Skirmisher", "Hoofstep Ambusher"
-        };
-        return names[random_int(0, static_cast<int>(names.size()) - 1)];
-    }
-    case RegionId::SouthernExpanse: {
-        static const std::vector<std::string> names = {
-            "Dustglass Viper", "Coastline Reaver"
-        };
-        return names[random_int(0, static_cast<int>(names.size()) - 1)];
-    }
-    case RegionId::ShrineOfTheWatchmaker: {
-        static const std::vector<std::string> names = {
-            "Broken Sentinel", "Tide Wraith"
-        };
-        return names[random_int(0, static_cast<int>(names.size()) - 1)];
-    }
-    case RegionId::EasternSea: {
-        static const std::vector<std::string> names = {
-            "Saltbound Corsair", "Sea-Glass Reaver"
-        };
-        return names[random_int(0, static_cast<int>(names.size()) - 1)];
-    }
-    case RegionId::StormSpiralIsles: {
-        static const std::vector<std::string> names = {
-            "Spiral Cultist", "Stormwake Harrier"
-        };
-        return names[random_int(0, static_cast<int>(names.size()) - 1)];
-    }
-    case RegionId::EasternMountainChain: {
-        static const std::vector<std::string> names = {
-            "Storm Roc", "Cliffside Ravager"
-        };
-        return names[random_int(0, static_cast<int>(names.size()) - 1)];
-    }
-    case RegionId::BlinkeringIsle: {
-        static const std::vector<std::string> names = {
-            "Blinker Wisp", "Beacon Raider"
-        };
-        return names[random_int(0, static_cast<int>(names.size()) - 1)];
-    }
-    case RegionId::Count:
-        break;
-    }
-
-    return "Wandering Foe";
-}
 
 EncounterSpec make_region_encounter(const AdventureState& adventure)
 {
@@ -540,7 +469,9 @@ EncounterSpec make_region_encounter(const AdventureState& adventure)
     stats.actions = { 3, 4, 0, 0, 0, 0 };
 
     EncounterSpec encounter;
-    encounter.name = random_enemy_name(adventure.current_region);
+    const auto& enemy_names = region.enemy_names;
+    encounter.name =
+        enemy_names[random_int(0, static_cast<int>(enemy_names.size()) - 1)];
     encounter.opening_line =
         "Trouble finds you in " + std::string(region.name) +
         " as " + encounter.name + " steps into your path.";
@@ -566,20 +497,12 @@ bool run_encounter(Character& hero,
     return hero.is_alive() && !enemy.is_alive();
 }
 
-std::string exploration_item_for_region(RegionId region)
+std::string exploration_item_for_region(const RegionData& region)
 {
-    switch (region) {
-    case RegionId::RuneMountains:
-    case RegionId::EasternMountainChain:
-        return (random_int(1, 100) <= 35) ? "Iron Sword" : "Potion";
-    case RegionId::CentaurionPlaines:
-        return (random_int(1, 100) <= 35) ? "Training Dagger" : "Herb";
-    case RegionId::SouthernExpanse:
-    case RegionId::Glade:
-        return (random_int(1, 100) <= 50) ? "Herb" : "Potion";
-    default:
-        return (random_int(1, 100) <= 70) ? "Potion" : "Herb";
-    }
+    const ExplorationItemProfile& items = region.exploration_items;
+    return (random_int(1, 100) <= items.first_item_chance)
+        ? items.first_item
+        : items.second_item;
 }
 
 bool explore_region(AdventureState& adventure,
@@ -622,21 +545,34 @@ bool explore_region(AdventureState& adventure,
             wait_for_enter();
             return true;
         }
-        if (adventure.current_region == RegionId::PatomicCity) {
+
+        const int event_roll = random_int(1, 100);
+
+        if (event_roll <= 45) {
+            run_random_npc_dialogue(adventure.current_region);
+        } else if (adventure.current_region == RegionId::PatomicCity) {
             const int gold_found = random_int(4, 9);
             hero.add_gold(gold_found);
             std::cout << "You walk the markets and pick up rumors, directions, and "
                       << gold_found << " gold in grateful tips.\n";
-        } else {
+        } else if (adventure.current_region == RegionId::ShrineOfTheWatchmaker) {
             fully_restore(hero);
             magicSound();
             std::cout << "The shrine's stillness lets you breathe. Your strength returns.\n";
+        } else {
+            const int gold_found = random_int(3, 8);
+            hero.add_gold(gold_found);
+            std::cout << "You take a quiet loop through " << region.name
+                      << " and pocket " << gold_found
+                      << " gold from a lucky errand.\n";
         }
         wait_for_enter();
         return true;
     }
 
     const int battle_chance = 20 + (region.danger_level * 15);
+    const int dialogue_chance = 20;
+    const int gold_chance = 35;
     const int event_roll = random_int(1, 100);
 
     if (event_roll <= battle_chance) {
@@ -654,7 +590,13 @@ bool explore_region(AdventureState& adventure,
         return true;
     }
 
-    if (event_roll <= battle_chance + 40) {
+    if (event_roll <= battle_chance + dialogue_chance) {
+        run_random_npc_dialogue(adventure.current_region);
+        wait_for_enter();
+        return true;
+    }
+
+    if (event_roll <= battle_chance + dialogue_chance + gold_chance) {
         const int gold_found = random_int(5, 11) + region.danger_level;
         hero.add_gold(gold_found);
         std::cout << "While exploring " << region.name
@@ -664,7 +606,7 @@ bool explore_region(AdventureState& adventure,
         return true;
     }
 
-    const std::string item_name = exploration_item_for_region(adventure.current_region);
+    const std::string item_name = exploration_item_for_region(region);
     if (add_named_item(inventory, item_name)) {
         std::cout << "You uncover " << item_name << " while exploring "
                   << region.name << ".\n";

@@ -15,7 +15,8 @@ fi
 $compiler -std=c++20 \
     source/ActionObject.cpp \
     source/BattleClass.cpp \
-    source/DialogueDatabase.cpp \
+    source/DialogueTree.cpp \
+    source/Gambling.cpp \
     source/GameItems.cpp \
     source/Inventory.cpp \
     source/LootTable.cpp \
