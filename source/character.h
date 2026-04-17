@@ -40,6 +40,7 @@ public:
     int  get_mana() const;
     int  get_stamina() const;
     int  get_gold() const;
+    int& get_gold_ref() { return m_stats.gold; }
     int  get_attack() const;
     StatusCondition get_status_condition() const;
 

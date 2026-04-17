@@ -12,6 +12,7 @@
 #include "Sound.h"
 #include "WorldMap.h"
 #include "character.h"
+#include "Gambling.h"
 
 namespace {
 
@@ -616,6 +617,11 @@ bool explore_region(AdventureState& adventure,
     const RegionData& region = GetRegionData(adventure.current_region);
 
     if (region.danger_level == 0) {
+        if (adventure.current_region == RegionId::Casino) {
+            Gambling::showMenu(hero.get_gold_ref());
+            wait_for_enter();
+            return true;
+        }
         if (adventure.current_region == RegionId::PatomicCity) {
             const int gold_found = random_int(4, 9);
             hero.add_gold(gold_found);
