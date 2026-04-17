@@ -1,4 +1,4 @@
-#include "gambling.h"
+#include "Gambling.h"
 
 #include <iostream>
 #include <cstdlib>
