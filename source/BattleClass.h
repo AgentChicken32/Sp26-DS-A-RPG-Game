@@ -32,12 +32,13 @@ public:
 
 	void DecideTurnOrder(); // runs once in constructor to determine Character action order
 
-	void PlayerTurn(Character* npc); // player turn to choose attacks
-	void PlayerMenu(Character* npc);//player turn menu display
+	int PlayerTurn(Character* npc); // player turn to choose attacks
+	int PlayerMenu(Character* npc);//player turn menu display
 	void EnemyTurn(Character* npc);  // enemy automatically decides what to do
 	void SmartEnemyTurn(Character* npc);
 
 	void PlayerAttack(Character* npc, Category type);//player attack menu display
+	int RunAway();//player attempts to run, gages chance based on difference in health
 
 	int CheckForWinLoss(); // 0 = ongoing, 1 = enemies dead, 2 = heroes dead
 	void AwardVictoryLoot();

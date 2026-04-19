@@ -216,18 +216,28 @@ void Battle::Setup() {
     }
 
     int result = 0;
+    int ran = 0;
 
-    while ((result = CheckForWinLoss()) == 0) {
+    while ((result = CheckForWinLoss()) == 0 && ran != 1) {
         if (turnOrder.empty()) break; // extra safety
 
         Character* actor = turnOrder[turnCounter];
 
+        int runAway = 0;
+
         bool is_enemy = (std::find(enemies.begin(), enemies.end(), actor) != enemies.end());
 
         if (is_enemy) {
-            EnemyTurn(actor);
+            SmartEnemyTurn(actor);
         } else {
-            PlayerTurn(actor);
+            runAway = PlayerTurn(actor);
+        }
+
+        if (runAway == 1) {
+            ran = RunAway();
+            if (ran != 1) {
+                cout << "But you couldn't escape!" << endl;
+            }
         }
 
         // advance turn counter with wrap-around
@@ -247,6 +257,10 @@ void Battle::Setup() {
         cout << "You lose!\n";
         PlaySoundCue(SoundCue::Error);
     }
+    else if (ran == 1) {
+        cout << "You escaped!\n";
+        PlaySoundCue(SoundCue::End);
+    }
 }
 
 void Battle::DecideTurnOrder() {
@@ -263,7 +277,17 @@ void Battle::DecideTurnOrder() {
     turnCounter = 0;
 }
 
-void Battle::PlayerTurn(Character* npc) {
+//taken straight from main!
+void wait_for_enter()
+{
+    std::cout << "Press Enter to continue...";
+    std::cout.flush();
+
+    std::string ignored;
+    std::getline(std::cin, ignored);
+}
+
+int Battle::PlayerTurn(Character* npc) {
     //recover a little mana!
     npc->restore_mana(5);
 
@@ -274,11 +298,17 @@ void Battle::PlayerTurn(Character* npc) {
          << " Mana: " << npc->get_mana() << "/" << npc->get_max_mana()
          << " Attack Bonus: " << npc->get_attack() << "\n";
 
-    PlayerMenu(npc);
+    if (npc->get_status_condition() != StatusCondition::Frozen) {
+        return PlayerMenu(npc);
+    }
+    else {
+        wait_for_enter();
+    }
 
+    return 0;
 }
 
-void Battle::PlayerMenu(Character* npc) {
+int Battle::PlayerMenu(Character* npc) {
     int input = 0;
 
     std::cout << dividerFlourish << std::endl;
@@ -303,12 +333,8 @@ void Battle::PlayerMenu(Character* npc) {
         PlayerMenu(npc);
         break;
     case 4:
-        std::cout << dividerFlourish << std::endl;
-        cout << R"(
-You tried to run away, but it failed!
-)" << endl;
-        PlaySoundCue(SoundCue::Error);
-        PlayerMenu(npc);
+        cout << "You tried to run away!" << endl;
+        return 1;
         break;
 
     default:
@@ -316,6 +342,8 @@ You tried to run away, but it failed!
         std::cout << "Invalid input! Try again!" << std::endl;
         PlayerMenu(npc);
     }
+
+    return 0;
 }
 
 void Battle::PlayerAttack(Character* npc, Category type) {
@@ -376,6 +404,27 @@ void Battle::PlayerAttack(Character* npc, Category type) {
     }
 }
 
+int Battle::RunAway() {
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+
+    if (enemies.size() == 1) {
+        int difference = (enemies[0]->get_health() - heroes[0]->get_health()) / 4;
+
+        if (difference <= 0) {
+            difference = 1;
+        }
+
+        std::uniform_int_distribution<int> escapeChance(1, difference);
+
+        return escapeChance(gen);
+    }
+    else {
+        return 0;
+    }
+}
+
 void Battle::EnemyTurn(Character* npc) {
     if (heroes.empty()) return;
 
@@ -409,17 +458,173 @@ void Battle::EnemyTurn(Character* npc) {
 
 void Battle::SmartEnemyTurn(Character* npc) {
     if (heroes.empty()) return;
+    Character* target = nullptr;
 
-    //find a target
+    std::vector<ActionData*> attacks;
 
-    //check if my health is less than 50, heal if I can
+    //mana heal
+    npc->restore_mana(5);
 
-    //check if any of my attacks can kill target
+    //print enemy info
+    cout << dividerFlourish << std::endl;
+    cout << "It is " << npc->get_name() << "'s turn!\n";
+    npc->status_handler(StatusCondition::None, 0);
+    cout << "Health: " << npc->get_health() << "/" << npc->get_max_health()
+        << " Mana: " << npc->get_mana() << "/" << npc->get_max_mana()
+        << " Attack Bonus: " << npc->get_attack() << "\n";
 
-    //check if enemy if enemy is significantly stronger than me, use buff or debuff if I can
+    if (npc->get_status_condition() != StatusCondition::Frozen) {
+        //find a target
+        if (heroes.size() == 1) {
+            target = heroes[0];
+        }
 
-    //else attack
-    
+        /////////////////////////////////////////////////
+        //IF YOU ARE WEAK ENOUGH, I'LL STRIKE YOU DOWN!//
+        /////////////////////////////////////////////////
+        //check if I have a killing move
+        for (int id : npc->get_action_ids()) {
+            if (id == 0) {
+                continue;
+            }
+
+            ActionData action = GetAction(id);
+
+            int damage = GetDamage(action);
+
+            //search for damage type 
+            if (damage != 0) {
+
+                //check action qualities
+                if (action.manaCost < npc->get_mana()
+                    && damage > npc->get_health()
+                    && action.accuracy >= 95)
+                {
+                    //run action
+                    npc->execute_attack(action, target);
+                    return;
+                }
+
+                //add damaging attacks to action data
+                //ActionData newAction = GetAction(action);
+                //attacks.push_back(&newAction);
+            }
+        }
+
+        ////////////////////////
+        //HEAL ME IF I'M HURT!//
+        ////////////////////////
+        //check if I am below 25% health and can heal
+        if (npc->get_health() < (npc->get_max_health() / 3)) {
+            for (int id : npc->get_action_ids()) {
+                if (id == 0) {
+                    continue;
+                }
+
+                ActionData action = GetAction(id);
+
+                for (const auto& effect : action.effects) {
+                    if (effect.type == EffectType::Heal) {
+                        if (action.manaCost < npc->get_mana()) {
+                            npc->execute_attack(action, target);
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+
+        //check if enemy if enemy is significantly stronger than me, use buff or debuff if I can
+        //we still dont have buffs and debuffs
+
+        //////////////////////////////
+        //IF ALL ELSE FAILS, ATTACK!//
+        //////////////////////////////
+
+        ActionData chosenAttack;
+        int chosenDamage = 0;
+        double chosenStatus = false;
+        ActionData action;
+
+        bool hasChoice = false;
+
+        for (int id : npc->get_action_ids()) {
+            if (id == 0) {
+                break;
+            }
+
+            action = GetAction(id);
+
+            //cout << "Action: " << action.name << endl;
+
+            int damage = GetDamage(action);
+            double status = CheckIfStatus(action);
+
+
+            if (!hasChoice) {
+                chosenAttack = action;
+                chosenDamage = damage;
+                chosenStatus = status;
+                hasChoice = true;
+            }
+            //BOLD: 75%-100% health
+            //chooses attack that has highest chance to induce status, doesn't care about mana cost or accuracy
+            else if (npc->get_health() > ((npc->get_max_health() / 4) * 3)) {
+                //cout << "BOLD" << endl;
+                if (chosenDamage < damage && !chosenStatus
+                    || chosenDamage < damage && status >= chosenStatus
+                    || status > chosenStatus) {
+                    chosenAttack = action;
+                    chosenDamage = damage;
+                    chosenStatus = status;
+                }
+            }
+            //WARY: 50%-75% health
+            //chooses strongest action with preference towards actions that cause statuses, starts worrying about mana cost
+            else if (npc->get_health() > (npc->get_max_health() / 2)) {
+                //cout << "WARY" << endl;
+                if (chosenDamage < damage && action.manaCost < npc->get_mana() && !chosenStatus
+                    || chosenDamage < damage && action.manaCost < npc->get_mana() && status) {
+                    chosenAttack = action;
+                    chosenDamage = damage;
+                    chosenStatus = status;
+                }
+            }
+            //CAREFUL: 25%-50% health
+            //chooses strongest move, with accuracy over 75%
+            else if (npc->get_health() > (npc->get_max_health() / 4)) {
+                //cout << "CAREFUL" << endl;
+                if (chosenDamage < damage
+                    && action.manaCost < npc->get_mana()
+                    && action.accuracy >= 75) {
+                    chosenAttack = action;
+                    chosenDamage = damage;
+                    chosenStatus = status;
+                }
+            }
+            //SCARED
+            //chooses usable move with the highest accuracy and highest attack
+            else {
+                //cout << "SCARED" << endl;
+                if (chosenDamage < damage
+                    && chosenAttack.accuracy < action.accuracy
+                    && action.manaCost < npc->get_mana()) {
+                    chosenAttack = action;
+                    chosenDamage = damage;
+                    chosenStatus = status;
+                }
+            }
+
+            //cout << damage << " vs " << chosenDamage << endl;
+        }
+
+        if (hasChoice) {
+            npc->execute_attack(chosenAttack, target);
+        }
+        else {
+            std::cout << npc->get_name() << " couldn't decide what action to take!" << std::endl;
+        }
+    }
 }
 
 int Battle::CheckForWinLoss() {

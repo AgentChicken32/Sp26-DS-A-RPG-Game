@@ -15,17 +15,20 @@ enum EffectType {
 	Damage,
 	Status,
 	Buff,
-	Debuff
+	Debuff,
+	Heal,
+	Null
 };
 
 enum class StatusCondition {
 	None,
 	Poison,
-	Burn
+	Burn,
+	Frozen
 };
 
 struct EffectData {
-	EffectType type = EffectType::Damage;
+	EffectType type = EffectType::Null;
 	StatusCondition status = StatusCondition::None;
 	int power = 0;
 	double afflictionChance = 0;
@@ -48,3 +51,9 @@ bool LoadDataBase();
 
 //get specified action from action data using action id
 ActionData GetAction(int id);
+
+//gets amount of damage action does
+int GetDamage(ActionData action);
+
+//check whether or not action can cause a status; returns affliction chance
+double CheckIfStatus(ActionData action);

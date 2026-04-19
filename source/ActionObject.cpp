@@ -15,12 +15,14 @@ std::unordered_map<std::string, EffectType> effectTypeMap = {
 	{"Damage", EffectType::Damage},
 	{"Status", EffectType::Status},
 	{"Buff", EffectType::Buff},
-	{"Debuff", EffectType::Debuff}
+	{"Debuff", EffectType::Debuff},
+	{"Heal", EffectType::Heal}
 };
 std::unordered_map<std::string, StatusCondition> statusTypeMap = {
 	{"None", StatusCondition::None},
 	{"Burn", StatusCondition::Burn},
-	{"Poison", StatusCondition::Poison}
+	{"Poison", StatusCondition::Poison},
+	{"Frozen", StatusCondition::Frozen}
 };
 
 static std::ifstream OpenActionJsonFile(std::filesystem::path& loadedPath) {
@@ -115,4 +117,24 @@ ActionData GetAction(int id) {
 	missing.name = "Unknown Action";
 	missing.accuracy = 0;
 	return missing;
+}
+
+int GetDamage(ActionData action) {
+	for (const auto& effect : action.effects) {
+		if (effect.type == EffectType::Damage) {
+			return effect.power;
+		}
+	}
+
+	return 0;
+}
+
+double CheckIfStatus(ActionData action) {
+	for (const auto& effect : action.effects) {
+		if (effect.type == EffectType::Status) {
+			return effect.afflictionChance;
+		}
+	}
+
+	return 0;
 }

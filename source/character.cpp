@@ -16,6 +16,8 @@ const char* StatusName(StatusCondition status) {
         return "poison";
     case StatusCondition::Burn:
         return "burn";
+    case StatusCondition::Frozen:
+        return "freezing";
     }
     return "nothing";
 }
@@ -121,6 +123,9 @@ bool Character::try_inflict_status(StatusCondition status, double chance) {
     case StatusCondition::Burn:
         std::cout << get_name() << " was set ablaze!" << std::endl;
         break;
+    case StatusCondition::Frozen:
+        std::cout << get_name() << " was frozen solid!" << std::endl;
+        break;
     }
 
     return true;
@@ -153,12 +158,17 @@ void Character::status_handler(StatusCondition status, int chanceOf) {
             case StatusCondition::Burn:
                 std::cout << get_name() << " was set ablaze!" << std::endl;
                 break;
+            case StatusCondition::Frozen:
+                std::cout << get_name() << " was frozen solid!" << std::endl;
+                break;
             }
         }
     }//inflicted->normal
     else if (m_stats.statusCondition != StatusCondition::None) {
         std::uniform_int_distribution<int> recoverPoison(1, 5);
         std::uniform_int_distribution<int> recoverBurning(1, 3);
+        std::uniform_int_distribution<int> recoverFrozen(1, 3);
+
 
         switch (m_stats.statusCondition) {
         case StatusCondition::None:
@@ -185,6 +195,14 @@ void Character::status_handler(StatusCondition status, int chanceOf) {
             }
 
             break;
+        case StatusCondition::Frozen://Frozen: 1/3 chance to thaw out, can't act while frozen (built into battleClass)
+            if (recoverFrozen(gen) == 1) {
+                m_stats.statusCondition = StatusCondition::None;
+                std::cout << get_name() << " thawed out!" << std::endl;
+            }
+            else {
+                std::cout << get_name() << " can't move! " << get_name() << " is frozen solid!" << std::endl;
+            }
         }
     }
 };
@@ -210,7 +228,7 @@ void Character::execute_attack(ActionData action, Character* target) {
     }
     else if (action.category == Magic) {//fail spell if not enough mana
         PlaySoundCue(SoundCue::Error);
-        std::cout << "The spell fizzled out in front of you! (Not enough mana)" << std::endl;
+        std::cout << get_name() << " cast " << action.name << ", but the spell fizzled out!" << std::endl;
         return;
     }
     else {
@@ -227,7 +245,7 @@ void Character::execute_attack(ActionData action, Character* target) {
     //check if action will hit
     if (accuracyCheck(gen) > action.accuracy) {
         PlaySoundCue(SoundCue::Error);
-        std::cout << "The attack missed!" << std::endl;
+        std::cout << get_name() << " used " << action.name << ", but it missed!" << std::endl;
         return;
     }
 
@@ -263,6 +281,13 @@ void Character::execute_attack(ActionData action, Character* target) {
             break;
         case Debuff:
             //nor is this
+            break;
+        case Heal:
+            
+            heal(effect.power);
+            std::cout << get_name() << " restored " << effect.power << " points of health!" << " Health: " 
+                << get_health() << "/" << get_max_health() << std::endl;
+
             break;
         }
     }
