@@ -3,8 +3,6 @@
 #include <cstddef>
 #include <string>
 #include <vector>
-#include "Character.h"
-#include "Sound.h"
 
 struct InventoryItem {
     enum class Type { Weapon, Armor, Consumable, Misc };
@@ -43,8 +41,6 @@ public:
     std::size_t size() const;
     std::size_t capacity() const;
     std::size_t remaining_capacity() const;
-
-    void manage_inventory(Inventory& inventory, Character& player);
 
     std::vector<ItemSummary> summarize() const;
     std::vector<InventoryItem> dump_items() const;

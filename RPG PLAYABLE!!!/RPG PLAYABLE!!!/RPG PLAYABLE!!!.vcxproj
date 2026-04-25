@@ -128,37 +128,42 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sp26-DS-A-RPG-Game\source\ActionObject.cpp" />
+    <ClCompile Include="..\..\Sp26-DS-A-RPG-Game\source\AdventureFlow.cpp" />
     <ClCompile Include="..\..\Sp26-DS-A-RPG-Game\source\BattleClass.cpp" />
     <ClCompile Include="..\..\Sp26-DS-A-RPG-Game\source\character.cpp" />
     <ClCompile Include="..\..\Sp26-DS-A-RPG-Game\source\DialogueTree.cpp" />
     <ClCompile Include="..\..\Sp26-DS-A-RPG-Game\source\Gambling.cpp" />
     <ClCompile Include="..\..\Sp26-DS-A-RPG-Game\source\GameItems.cpp" />
     <ClCompile Include="..\..\Sp26-DS-A-RPG-Game\source\Inventory.cpp" />
+    <ClCompile Include="..\..\Sp26-DS-A-RPG-Game\source\InventoryMenu.cpp" />
     <ClCompile Include="..\..\Sp26-DS-A-RPG-Game\source\LootTable.cpp" />
     <ClCompile Include="..\..\Sp26-DS-A-RPG-Game\source\Main.cpp" />
     <ClCompile Include="..\..\Sp26-DS-A-RPG-Game\source\RPG_T_Menu.cpp" />
     <ClCompile Include="..\..\Sp26-DS-A-RPG-Game\source\SaveState.cpp" />
     <ClCompile Include="..\..\Sp26-DS-A-RPG-Game\source\SceneClass.cpp" />
     <ClCompile Include="..\..\Sp26-DS-A-RPG-Game\source\Sound.cpp" />
+    <ClCompile Include="..\..\Sp26-DS-A-RPG-Game\source\UiCommon.cpp" />
+    <ClCompile Include="..\..\Sp26-DS-A-RPG-Game\source\WorldUi.cpp" />
     <ClCompile Include="..\..\Sp26-DS-A-RPG-Game\source\WorldMap.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sp26-DS-A-RPG-Game\source\ActionObject.h" />
+    <ClInclude Include="..\..\Sp26-DS-A-RPG-Game\source\AdventureFlow.h" />
     <ClInclude Include="..\..\Sp26-DS-A-RPG-Game\source\BattleClass.h" />
     <ClInclude Include="..\..\Sp26-DS-A-RPG-Game\source\character.h" />
     <ClInclude Include="..\..\Sp26-DS-A-RPG-Game\source\DialogueTree.h" />
     <ClInclude Include="..\..\Sp26-DS-A-RPG-Game\source\Gambling.h" />
     <ClInclude Include="..\..\Sp26-DS-A-RPG-Game\source\GameItems.h" />
     <ClInclude Include="..\..\Sp26-DS-A-RPG-Game\source\Inventory.h" />
+    <ClInclude Include="..\..\Sp26-DS-A-RPG-Game\source\InventoryMenu.h" />
     <ClInclude Include="..\..\Sp26-DS-A-RPG-Game\source\json.hpp" />
     <ClInclude Include="..\..\Sp26-DS-A-RPG-Game\source\LootTable.h" />
     <ClInclude Include="..\..\Sp26-DS-A-RPG-Game\source\SaveState.h" />
     <ClInclude Include="..\..\Sp26-DS-A-RPG-Game\source\SceneClass.h" />
     <ClInclude Include="..\..\Sp26-DS-A-RPG-Game\source\Sound.h" />
+    <ClInclude Include="..\..\Sp26-DS-A-RPG-Game\source\UiCommon.h" />
+    <ClInclude Include="..\..\Sp26-DS-A-RPG-Game\source\WorldUi.h" />
     <ClInclude Include="..\..\Sp26-DS-A-RPG-Game\source\WorldMap.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\Sp26-DS-A-RPG-Game\source\Exe" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

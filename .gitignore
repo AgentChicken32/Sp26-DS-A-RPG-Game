@@ -5,12 +5,38 @@
 /RPGProject
 /build/
 /cmake-build-*/
+/out/
+
+# Editor and IDE artifacts
+/.vs/
+/.vscode/
+*.suo
+*.user
+*.db
+*.sqlite
+*.vsidx
+
+# Visual Studio generated outputs
+/RPG PLAYABLE!!!/.vs/
+/RPG PLAYABLE!!!/RPG PLAYABLE!!!/x64/
+/RPG PLAYABLE!!!/x64/
+*.obj
+*.pdb
+*.ilk
+*.idb
+*.tlog
+*.recipe
+*.exe
+*.log
 
 # Runtime save-state artifacts
 /saves/
 /source/saves/
 *.tmp
 *.bak
+/source/Exe
+/.DS_Store
+/source/.DS_Store
 /CppProperties.json
 /.vs/Sp26-DS-A-RPG-Game.slnx
 /.vs/Sp26-DS-A-RPG-Game/CopilotIndices

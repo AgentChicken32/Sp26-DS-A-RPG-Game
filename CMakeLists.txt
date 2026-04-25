@@ -8,19 +8,24 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_executable(rpg-game
     source/ActionObject.cpp
+    source/AdventureFlow.cpp
     source/BattleClass.cpp
     source/DialogueTree.cpp
     source/GameItems.cpp
     source/Inventory.cpp
+    source/InventoryMenu.cpp
     source/LootTable.cpp
     source/Main.cpp
     source/RPG_T_Menu.cpp
     source/SaveState.cpp
     source/SceneClass.cpp
     source/Sound.cpp
+    source/UiCommon.cpp
+    source/WorldUi.cpp
     source/WorldMap.cpp
     source/character.cpp
- "source/Gambling.h" "source/Gambling.cpp")
+    source/Gambling.cpp
+)
 
 if(APPLE)
     find_library(AUDIOTOOLBOX_FRAMEWORK AudioToolbox REQUIRED)
