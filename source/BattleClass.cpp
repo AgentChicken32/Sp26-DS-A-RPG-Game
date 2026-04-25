@@ -1,26 +1,16 @@
 #include "BattleClass.h"
+#include "InventoryMenu.h"
 #include "character.h"
 #include "LootTable.h"
 #include "Sound.h"
+#include "UiCommon.h"
 
 #include <algorithm>
 #include <iostream>
-#include <limits>
 #include <random>
 #include <vector>
 
 using namespace std;
-
-static int read_int_choice() {
-    int choice{};
-    while (!(cin >> choice)) {
-        cin.clear();
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        cout << "Please enter a number: ";
-    }
-    cin.ignore(numeric_limits<streamsize>::max(), '\n');
-    return choice;
-}
 
 static Character* choose_enemy_target(vector<Character*>& enemies) {
     vector<Character*> alive;
@@ -46,7 +36,7 @@ static Character* choose_enemy_target(vector<Character*>& enemies) {
         }
         cout << (alive.size() + 1) << ". BACK\n";
 
-        const int input = read_int_choice();
+        const int input = ReadIntChoice();
         if (input == static_cast<int>(alive.size()) + 1) {
             return nullptr;
         }
@@ -82,7 +72,7 @@ bool Battle::BasicPlayerAttack(Character* npc) {
         }
         cout << (enemies.size() + 1) << ". BACK\n";
 
-        input = read_int_choice();
+        input = ReadIntChoice();
 
         // BACK
         if (input == static_cast<int>(enemies.size()) + 1) {
@@ -142,7 +132,7 @@ bool Battle::BasicPlayerMagic(Character* npc) {
         }
         cout << (enemies.size() + 1) << ". BACK\n";
 
-        input = read_int_choice();
+        input = ReadIntChoice();
 
         // BACK
         if (input == static_cast<int>(enemies.size()) + 1) {
@@ -287,7 +277,7 @@ void Battle::PlayerMenu(Character* npc) {
 )" << endl;
 
     PlaySoundCue(SoundCue::Menu);
-    input = read_int_choice();
+    input = ReadIntChoice();
 
     switch (input) {
     case 1:
@@ -330,7 +320,7 @@ void Battle::PlayerAttack(Character* npc, Category type) {
     }
 
     int input = 0;
-    input = read_int_choice();
+    input = ReadIntChoice();
     const int backOption = static_cast<int>(options.size()) + 1;
 
     //BACK section: returns to playerMenu
@@ -407,21 +397,6 @@ void Battle::EnemyTurn(Character* npc) {
     cout << heroes[idx]->get_name() << " has " << heroes[idx]->get_health() << " health left!\n";
 }
 
-void Battle::SmartEnemyTurn(Character* npc) {
-    if (heroes.empty()) return;
-
-    //find a target
-
-    //check if my health is less than 50, heal if I can
-
-    //check if any of my attacks can kill target
-
-    //check if enemy if enemy is significantly stronger than me, use buff or debuff if I can
-
-    //else attack
-    
-}
-
 int Battle::CheckForWinLoss() {
     enemies.erase(
         std::remove_if(enemies.begin(), enemies.end(),
@@ -474,7 +449,13 @@ void Battle::AwardVictoryLoot() {
 
 void Battle::AccessInventory() {
     cout << "*-------------------------------------------------------*\n";
-    partyInventory->manage_inventory(*partyInventory, *heroes[0]);
+    if (!partyInventory || heroes.empty() || !heroes[0]) {
+        PlaySoundCue(SoundCue::Error);
+        cout << "No inventory is available right now.\n";
+        return;
+    }
+
+    ManageInventory(*partyInventory, *heroes[0]);
 }
 
 void Battle::MenuOptions() {

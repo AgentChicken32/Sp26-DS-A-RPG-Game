@@ -18,6 +18,9 @@
     <ClCompile Include="..\..\Sp26-DS-A-RPG-Game\source\ActionObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sp26-DS-A-RPG-Game\source\AdventureFlow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Sp26-DS-A-RPG-Game\source\BattleClass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -34,6 +37,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sp26-DS-A-RPG-Game\source\Inventory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sp26-DS-A-RPG-Game\source\InventoryMenu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sp26-DS-A-RPG-Game\source\LootTable.cpp">
@@ -54,12 +60,21 @@
     <ClCompile Include="..\..\Sp26-DS-A-RPG-Game\source\Sound.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sp26-DS-A-RPG-Game\source\UiCommon.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sp26-DS-A-RPG-Game\source\WorldUi.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Sp26-DS-A-RPG-Game\source\WorldMap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sp26-DS-A-RPG-Game\source\ActionObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sp26-DS-A-RPG-Game\source\AdventureFlow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sp26-DS-A-RPG-Game\source\BattleClass.h">
@@ -80,6 +95,9 @@
     <ClInclude Include="..\..\Sp26-DS-A-RPG-Game\source\Inventory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sp26-DS-A-RPG-Game\source\InventoryMenu.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Sp26-DS-A-RPG-Game\source\json.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -95,11 +113,14 @@
     <ClInclude Include="..\..\Sp26-DS-A-RPG-Game\source\Sound.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sp26-DS-A-RPG-Game\source\UiCommon.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sp26-DS-A-RPG-Game\source\WorldUi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Sp26-DS-A-RPG-Game\source\WorldMap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\Sp26-DS-A-RPG-Game\source\Exe" />
   </ItemGroup>
 </Project>
