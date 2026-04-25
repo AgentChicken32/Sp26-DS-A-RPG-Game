@@ -7,25 +7,26 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_executable(rpg-game
-    source/ActionObject.cpp
-    source/AdventureFlow.cpp
-    source/BattleClass.cpp
-    source/DialogueTree.cpp
-    source/GameItems.cpp
-    source/Inventory.cpp
-    source/InventoryMenu.cpp
-    source/LootTable.cpp
-    source/Main.cpp
-    source/RPG_T_Menu.cpp
-    source/SaveState.cpp
-    source/SceneClass.cpp
-    source/Sound.cpp
-    source/UiCommon.cpp
-    source/WorldUi.cpp
-    source/WorldMap.cpp
-    source/character.cpp
-    source/Gambling.cpp
+    source/data/ActionObject.cpp
+    source/world/AdventureFlow.cpp
+    source/battle/BattleClass.cpp
+    source/world/DialogueTree.cpp
+    source/inventory/GameItems.cpp
+    source/inventory/Inventory.cpp
+    source/inventory/InventoryMenu.cpp
+    source/battle/LootTable.cpp
+    source/app/Main.cpp
+    source/persistence/SaveState.cpp
+    source/battle/SceneClass.cpp
+    source/platform/Sound.cpp
+    source/platform/UiCommon.cpp
+    source/world/WorldUi.cpp
+    source/world/WorldMap.cpp
+    source/characters/character.cpp
+    source/world/Gambling.cpp
 )
+
+target_include_directories(rpg-game PRIVATE source)
 
 if(APPLE)
     find_library(AUDIOTOOLBOX_FRAMEWORK AudioToolbox REQUIRED)

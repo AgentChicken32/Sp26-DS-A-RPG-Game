@@ -30,6 +30,8 @@
 *.log
 
 # Runtime save-state artifacts
+/runtime/saves/*
+!/runtime/saves/.gitkeep
 /saves/
 /source/saves/
 *.tmp
