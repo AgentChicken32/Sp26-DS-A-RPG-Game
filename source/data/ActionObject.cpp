@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <array>
 #include <filesystem>
 #include <fstream>
@@ -16,12 +17,14 @@ std::unordered_map<std::string, EffectType> effectTypeMap = {
 	{"Damage", EffectType::Damage},
 	{"Status", EffectType::Status},
 	{"Buff", EffectType::Buff},
-	{"Debuff", EffectType::Debuff}
+	{"Debuff", EffectType::Debuff},
+	{"Heal", EffectType::Heal}
 };
 std::unordered_map<std::string, StatusCondition> statusTypeMap = {
 	{"None", StatusCondition::None},
 	{"Burn", StatusCondition::Burn},
-	{"Poison", StatusCondition::Poison}
+	{"Poison", StatusCondition::Poison},
+	{"Frozen", StatusCondition::Frozen}
 };
 
 const std::array<std::filesystem::path, 7> kActionDataCandidates = {
@@ -121,4 +124,26 @@ ActionData GetAction(int id) {
 	missing.name = "Unknown Action";
 	missing.accuracy = 0;
 	return missing;
+}
+
+int GetDamage(const ActionData& action) {
+	for (const auto& effect : action.effects) {
+		if (effect.type == EffectType::Damage) {
+			return effect.power;
+		}
+	}
+
+	return 0;
+}
+
+double CheckIfStatus(const ActionData& action) {
+	double strongestChance = 0.0;
+
+	for (const auto& effect : action.effects) {
+		if (effect.type == EffectType::Status) {
+			strongestChance = std::max(strongestChance, effect.afflictionChance);
+		}
+	}
+
+	return strongestChance;
 }

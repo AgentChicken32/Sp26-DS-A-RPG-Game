@@ -23,7 +23,7 @@ int main()
     heroStats.max_stamina = 18;
     heroStats.stamina = 18;
     heroStats.attack = 0;
-    heroStats.actions = { 1, 2, 6, 5, 0, 0 };
+    heroStats.actions = { 1, 2, 6, 5, 7, 0 };
 
     Character hero("Hero", heroStats);
     Inventory inventory;

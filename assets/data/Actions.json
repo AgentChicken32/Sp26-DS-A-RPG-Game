@@ -52,7 +52,7 @@
     "id": 4,
     "name": "Bite",
     "category": "Physical",
-    "accuracy": 100,
+    "accuracy": 90,
     "manaCost": 0,
     "effects": [
       {
@@ -76,6 +76,11 @@
       {
         "type": "Damage",
         "power": 20
+      },
+      {
+        "type": "Status",
+        "statusCondition": "Frozen",
+        "afflictionChance": 0.1
       }
     ]
   },
@@ -88,7 +93,51 @@
     "effects": [
       {
         "type": "Damage",
-        "power": 20
+        "power": 25
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "name": "Lesser Heal",
+    "category": "Magic",
+    "accuracy": 100,
+    "manaCost": 30,
+    "effects": [
+      {
+        "type": "Heal",
+        "power": 30
+      }
+    ]
+  },
+  {
+    "id": 8,
+    "name": "Greater Heal",
+    "category": "Magic",
+    "accuracy": 100,
+    "manaCost": 50,
+    "effects": [
+      {
+        "type": "Heal",
+        "power": 80
+      }
+    ]
+  },
+  {
+    "id": 9,
+    "name": "Poison Cloud",
+    "category": "Magic",
+    "accuracy": 75,
+    "manaCost": 15,
+    "effects": [
+      {
+        "type": "Damage",
+        "power": 5
+      },
+      {
+        "type": "Status",
+        "statusCondition": "Poison",
+        "afflictionChance": 0.5
       }
     ]
   },

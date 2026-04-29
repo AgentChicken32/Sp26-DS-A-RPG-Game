@@ -15,13 +15,15 @@ enum EffectType {
 	Damage,
 	Status,
 	Buff,
-	Debuff
+	Debuff,
+	Heal
 };
 
 enum class StatusCondition {
 	None,
 	Poison,
-	Burn
+	Burn,
+	Frozen
 };
 
 struct EffectData {
@@ -48,3 +50,9 @@ bool LoadDataBase();
 
 //get specified action from action data using action id
 ActionData GetAction(int id);
+
+//gets amount of direct damage an action can do
+int GetDamage(const ActionData& action);
+
+//returns the strongest status affliction chance on an action
+double CheckIfStatus(const ActionData& action);

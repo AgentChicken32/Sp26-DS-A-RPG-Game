@@ -114,15 +114,16 @@ EncounterSpec MakeRegionEncounter(const AdventureState& adventure)
     const int stage_bonus = static_cast<int>(adventure.story_stage);
     const int base_health = 42 + (region.danger_level * 18) + (stage_bonus * 8);
     const int stamina = 10 + (region.danger_level * 2);
+    const int base_mana = 15 + (region.danger_level * 18) + (stage_bonus * 8);
 
     Character::Stats stats{};
     stats.max_health = base_health + RandomInt(0, 12);
     stats.health = stats.max_health;
-    stats.max_mana = 0;
-    stats.mana = 0;
+    stats.max_mana = base_mana + RandomInt(0, 12);
+    stats.mana = stats.max_mana;
     stats.max_stamina = stamina;
     stats.stamina = stamina;
-    stats.actions = { 3, 4, 0, 0, 0, 0 };
+    stats.actions = { 3, 4, 9, 7, 0, 0 };
 
     EncounterSpec encounter;
     const auto& enemy_names = region.enemy_names;

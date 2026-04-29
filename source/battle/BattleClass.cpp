@@ -1,7 +1,8 @@
 #include "battle/BattleClass.h"
-#include "inventory/InventoryMenu.h"
-#include "characters/character.h"
+
 #include "battle/LootTable.h"
+#include "characters/character.h"
+#include "inventory/InventoryMenu.h"
 #include "platform/Sound.h"
 #include "platform/UiCommon.h"
 
@@ -12,13 +13,65 @@
 
 using namespace std;
 
-static Character* choose_enemy_target(vector<Character*>& enemies) {
+namespace {
+
+vector<Character*> LivingTargets(const vector<Character*>& group)
+{
     vector<Character*> alive;
-    for (Character* enemy : enemies) {
-        if (enemy && enemy->is_alive()) {
-            alive.push_back(enemy);
+    for (Character* character : group) {
+        if (character && character->is_alive()) {
+            alive.push_back(character);
         }
     }
+    return alive;
+}
+
+bool ActionTargetsEnemy(const ActionData& action)
+{
+    for (const auto& effect : action.effects) {
+        switch (effect.type) {
+        case EffectType::Damage:
+        case EffectType::Status:
+        case EffectType::Buff:
+        case EffectType::Debuff:
+            return true;
+        case EffectType::Heal:
+            break;
+        }
+    }
+    return false;
+}
+
+int HealingPower(const ActionData& action)
+{
+    int healing = 0;
+    for (const auto& effect : action.effects) {
+        if (effect.type == EffectType::Heal) {
+            healing += effect.power;
+        }
+    }
+    return healing;
+}
+
+Character* ChooseWeakestTarget(const vector<Character*>& targets)
+{
+    vector<Character*> alive = LivingTargets(targets);
+    if (alive.empty()) {
+        return nullptr;
+    }
+
+    return *min_element(
+        alive.begin(),
+        alive.end(),
+        [](Character* lhs, Character* rhs) {
+            return lhs->get_health() < rhs->get_health();
+        });
+}
+
+} // namespace
+
+static Character* choose_enemy_target(vector<Character*>& enemies) {
+    vector<Character*> alive = LivingTargets(enemies);
 
     if (alive.empty()) {
         return nullptr;
@@ -165,7 +218,6 @@ bool Battle::BasicPlayerMagic(Character* npc) {
            continue;
         }
         else {
-
             target->take_damage(30);
             npc->spend_mana(10);
 
@@ -206,22 +258,31 @@ void Battle::Setup() {
     }
 
     int result = 0;
+    bool escaped = false;
 
-    while ((result = CheckForWinLoss()) == 0) {
-        if (turnOrder.empty()) break; // extra safety
-
-        Character* actor = turnOrder[turnCounter];
-
-        bool is_enemy = (std::find(enemies.begin(), enemies.end(), actor) != enemies.end());
-
-        if (is_enemy) {
-            EnemyTurn(actor);
-        } else {
-            PlayerTurn(actor);
+    while ((result = CheckForWinLoss()) == 0 && !escaped) {
+        if (turnOrder.empty()) {
+            break;
         }
 
-        // advance turn counter with wrap-around
-        if (!turnOrder.empty()) {
+        Character* actor = turnOrder[turnCounter];
+        bool is_enemy =
+            (std::find(enemies.begin(), enemies.end(), actor) != enemies.end());
+
+        if (is_enemy) {
+            SmartEnemyTurn(actor);
+        } else {
+            const bool attempted_escape = PlayerTurn(actor);
+            if (attempted_escape) {
+                escaped = RunAway();
+                if (!escaped) {
+                    cout << "But you couldn't escape!" << endl;
+                    PlaySoundCue(SoundCue::Error);
+                }
+            }
+        }
+
+        if (!escaped && !turnOrder.empty()) {
             turnCounter++;
             if (turnCounter >= static_cast<int>(turnOrder.size())) {
                 turnCounter = 0;
@@ -229,7 +290,10 @@ void Battle::Setup() {
         }
     }
 
-    if (result == 1) {
+    if (escaped) {
+        cout << "You escaped!\n";
+        PlaySoundCue(SoundCue::End);
+    } else if (result == 1) {
         cout << "You win!\n";
         PlaySoundCue(SoundCue::End);
         AwardVictoryLoot();
@@ -253,117 +317,141 @@ void Battle::DecideTurnOrder() {
     turnCounter = 0;
 }
 
-void Battle::PlayerTurn(Character* npc) {
-    //recover a little mana!
+bool Battle::PlayerTurn(Character* npc) {
     npc->restore_mana(5);
 
     cout << dividerFlourish << std::endl;
     cout << "It is " << npc->get_name() << "'s turn!\n";
     npc->status_handler(StatusCondition::None, 0);
-    cout << "Health: " << npc->get_health() << "/" << npc-> get_max_health()
+    if (!npc->is_alive()) {
+        return false;
+    }
+
+    cout << "Health: " << npc->get_health() << "/" << npc->get_max_health()
          << " Mana: " << npc->get_mana() << "/" << npc->get_max_mana()
          << " Attack Bonus: " << npc->get_attack() << "\n";
 
-    PlayerMenu(npc);
+    if (npc->get_status_condition() == StatusCondition::Frozen) {
+        WaitForEnter();
+        return false;
+    }
 
+    return PlayerMenu(npc);
 }
 
-void Battle::PlayerMenu(Character* npc) {
-    int input = 0;
-
-    std::cout << dividerFlourish << std::endl;
-    cout << R"(Choose an action!
+bool Battle::PlayerMenu(Character* npc) {
+    while (true) {
+        std::cout << dividerFlourish << std::endl;
+        cout << R"(Choose an action!
 1. ATTACK    2. MAGIC    3. ITEMS    4. ESCAPE
 )" << endl;
 
-    PlaySoundCue(SoundCue::Menu);
-    input = ReadIntChoice();
+        PlaySoundCue(SoundCue::Menu);
+        const int input = ReadIntChoice();
 
-    switch (input) {
-    case 1:
-        //BasicPlayerAttack(npc);
-        PlayerAttack(npc, Physical);
-        break;
-    case 2:
-        //BasicPlayerMagic(npc);
-        PlayerAttack(npc, Magic);
-        break;
-    case 3:
-        AccessInventory();
-        PlayerMenu(npc);
-        break;
-    case 4:
-        std::cout << dividerFlourish << std::endl;
-        cout << R"(
-You tried to run away, but it failed!
-)" << endl;
-        PlaySoundCue(SoundCue::Error);
-        PlayerMenu(npc);
-        break;
-
-    default:
-        PlaySoundCue(SoundCue::Error);
-        std::cout << "Invalid input! Try again!" << std::endl;
-        PlayerMenu(npc);
+        switch (input) {
+        case 1:
+            if (PlayerAttack(npc, Physical)) {
+                return false;
+            }
+            break;
+        case 2:
+            if (PlayerAttack(npc, Magic)) {
+                return false;
+            }
+            break;
+        case 3:
+            AccessInventory();
+            break;
+        case 4:
+            std::cout << dividerFlourish << std::endl;
+            cout << "You tried to run away!" << endl;
+            return true;
+        default:
+            PlaySoundCue(SoundCue::Error);
+            std::cout << "Invalid input! Try again!" << std::endl;
+            break;
+        }
     }
 }
 
-void Battle::PlayerAttack(Character* npc, Category type) {
-    //diplay attacks and get positions
-    std::cout << dividerFlourish << std::endl;
-    std::vector<int> options = npc->display_actions(type);
-    if (options.empty()) {
-        PlaySoundCue(SoundCue::Error);
-        std::cout << "No actions of that type are available.\n";
-        PlayerMenu(npc);
-        return;
-    }
-
-    int input = 0;
-    input = ReadIntChoice();
-    const int backOption = static_cast<int>(options.size()) + 1;
-
-    //BACK section: returns to playerMenu
-    if (input == backOption) {
-        PlayerMenu(npc);
-        return;
-
-    }//out of range sections: gives error message and runs playerAttack again
-    else if (input < 1 || input > backOption) {
-
+bool Battle::PlayerAttack(Character* npc, Category type) {
+    while (true) {
         std::cout << dividerFlourish << std::endl;
-        PlaySoundCue(SoundCue::Error);
-        std::cout << "Invalid input! Please try again." << std::endl;
+        std::vector<int> options = npc->display_actions(type);
+        if (options.empty()) {
+            PlaySoundCue(SoundCue::Error);
+            std::cout << "No actions of that type are available.\n";
+            return false;
+        }
 
-        PlayerAttack(npc, type);
-        return;
+        const int input = ReadIntChoice();
+        const int backOption = static_cast<int>(options.size()) + 1;
 
-    }//run selected attack section
-    else {
+        if (input == backOption) {
+            return false;
+        }
+
+        if (input < 1 || input > backOption) {
+            std::cout << dividerFlourish << std::endl;
+            PlaySoundCue(SoundCue::Error);
+            std::cout << "Invalid input! Please try again." << std::endl;
+            continue;
+        }
+
         const std::array<int, 6>& actionIds = npc->get_action_ids();
         const int actionIndex = options[input - 1];
         if (actionIndex < 0 || actionIndex >= static_cast<int>(actionIds.size())) {
             PlaySoundCue(SoundCue::Error);
             std::cout << "Invalid action selection.\n";
-            PlayerMenu(npc);
-            return;
+            continue;
         }
 
         ActionData moveChoice = GetAction(actionIds[actionIndex]);
         if (moveChoice.name == "Unknown Action") {
             PlaySoundCue(SoundCue::Error);
             std::cout << "That action is unavailable.\n";
-            PlayerMenu(npc);
-            return;
+            continue;
+        }
+
+        if (!ActionTargetsEnemy(moveChoice)) {
+            npc->execute_attack(moveChoice, npc);
+            return true;
         }
 
         Character* targetChoice = choose_enemy_target(enemies);
         if (!targetChoice) {
-            PlayerMenu(npc);
-            return;
+            continue;
         }
+
         npc->execute_attack(moveChoice, targetChoice);
+        return true;
     }
+}
+
+bool Battle::RunAway() {
+    if (heroes.empty()) {
+        return false;
+    }
+
+    vector<Character*> aliveEnemies = LivingTargets(enemies);
+    if (aliveEnemies.size() != 1) {
+        return false;
+    }
+
+    Character* hero = heroes.front();
+    Character* enemy = aliveEnemies.front();
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+
+    int difference = (enemy->get_health() - hero->get_health()) / 4;
+    if (difference <= 0) {
+        return true;
+    }
+
+    std::uniform_int_distribution<int> escapeChance(1, difference);
+    return escapeChance(gen) == 1;
 }
 
 void Battle::EnemyTurn(Character* npc) {
@@ -372,7 +460,9 @@ void Battle::EnemyTurn(Character* npc) {
     std::random_device rd;
     std::mt19937 gen(rd());
 
-    std::uniform_int_distribution<int> chooseTarget(0, static_cast<int>(heroes.size()) - 1);
+    std::uniform_int_distribution<int> chooseTarget(
+        0,
+        static_cast<int>(heroes.size()) - 1);
     std::uniform_int_distribution<int> damage(20, 30);
 
     int attempts = 0;
@@ -389,12 +479,158 @@ void Battle::EnemyTurn(Character* npc) {
     heroes[idx]->take_damage(dmg);
 
     cout << "*-------------------------------------------------------*\n";
-    //print enemy info
-    std::cout << npc->get_name() << "'s turn! Health: " << npc->get_health() << "/" << npc->get_max_health() << std::endl;
+    std::cout << npc->get_name() << "'s turn! Health: "
+              << npc->get_health() << "/" << npc->get_max_health()
+              << std::endl;
     npc->status_handler(StatusCondition::None, 0);
     cout << npc->get_name() << " wacked " << heroes[idx]->get_name() << "!\n";
     heroes[idx]->status_handler(StatusCondition::Poison, 4);
-    cout << heroes[idx]->get_name() << " has " << heroes[idx]->get_health() << " health left!\n";
+    cout << heroes[idx]->get_name() << " has " << heroes[idx]->get_health()
+         << " health left!\n";
+}
+
+void Battle::SmartEnemyTurn(Character* npc) {
+    vector<Character*> aliveHeroes = LivingTargets(heroes);
+    if (aliveHeroes.empty()) {
+        return;
+    }
+
+    npc->restore_mana(5);
+
+    cout << dividerFlourish << std::endl;
+    cout << "It is " << npc->get_name() << "'s turn!\n";
+    npc->status_handler(StatusCondition::None, 0);
+    if (!npc->is_alive()) {
+        return;
+    }
+
+    cout << "Health: " << npc->get_health() << "/" << npc->get_max_health()
+         << " Mana: " << npc->get_mana() << "/" << npc->get_max_mana()
+         << " Attack Bonus: " << npc->get_attack() << "\n";
+
+    if (npc->get_status_condition() == StatusCondition::Frozen) {
+        return;
+    }
+
+    vector<ActionData> usableActions;
+    for (int id : npc->get_action_ids()) {
+        if (id == 0) {
+            continue;
+        }
+
+        ActionData action = GetAction(id);
+        if (action.name == "Unknown Action") {
+            continue;
+        }
+        if (action.category == Magic && action.manaCost > npc->get_mana()) {
+            continue;
+        }
+
+        usableActions.push_back(action);
+    }
+
+    if (usableActions.empty()) {
+        EnemyTurn(npc);
+        return;
+    }
+
+    Character* weakestHero = ChooseWeakestTarget(aliveHeroes);
+    if (!weakestHero) {
+        return;
+    }
+
+    ActionData* bestHeal = nullptr;
+    for (auto& action : usableActions) {
+        if (HealingPower(action) > 0) {
+            if (!bestHeal || HealingPower(action) > HealingPower(*bestHeal)) {
+                bestHeal = &action;
+            }
+        }
+    }
+
+    if (bestHeal && npc->get_health() < (npc->get_max_health() / 3)) {
+        npc->execute_attack(*bestHeal, npc);
+        return;
+    }
+
+    ActionData* lethalAction = nullptr;
+    for (auto& action : usableActions) {
+        if (!ActionTargetsEnemy(action)) {
+            continue;
+        }
+
+        if (GetDamage(action) >= weakestHero->get_health()) {
+            if (!lethalAction ||
+                action.accuracy > lethalAction->accuracy ||
+                (action.accuracy == lethalAction->accuracy &&
+                 GetDamage(action) > GetDamage(*lethalAction))) {
+                lethalAction = &action;
+            }
+        }
+    }
+
+    if (lethalAction) {
+        npc->execute_attack(*lethalAction, weakestHero);
+        return;
+    }
+
+    ActionData* chosenAction = nullptr;
+    double chosenStatusChance = -1.0;
+    int chosenDamage = -1;
+
+    for (auto& action : usableActions) {
+        if (!ActionTargetsEnemy(action)) {
+            continue;
+        }
+
+        const int damage = GetDamage(action);
+        const double statusChance = CheckIfStatus(action);
+
+        if (!chosenAction) {
+            chosenAction = &action;
+            chosenDamage = damage;
+            chosenStatusChance = statusChance;
+            continue;
+        }
+
+        if (npc->get_health() > ((npc->get_max_health() / 4) * 3)) {
+            if (statusChance > chosenStatusChance ||
+                (statusChance == chosenStatusChance && damage > chosenDamage)) {
+                chosenAction = &action;
+                chosenDamage = damage;
+                chosenStatusChance = statusChance;
+            }
+        } else if (npc->get_health() > (npc->get_max_health() / 2)) {
+            if (damage > chosenDamage ||
+                (damage == chosenDamage && statusChance > chosenStatusChance)) {
+                chosenAction = &action;
+                chosenDamage = damage;
+                chosenStatusChance = statusChance;
+            }
+        } else if (npc->get_health() > (npc->get_max_health() / 4)) {
+            const int currentScore = chosenAction->accuracy + chosenDamage;
+            const int candidateScore = action.accuracy + damage;
+            if (candidateScore > currentScore) {
+                chosenAction = &action;
+                chosenDamage = damage;
+                chosenStatusChance = statusChance;
+            }
+        } else {
+            if (action.accuracy > chosenAction->accuracy ||
+                (action.accuracy == chosenAction->accuracy && damage > chosenDamage)) {
+                chosenAction = &action;
+                chosenDamage = damage;
+                chosenStatusChance = statusChance;
+            }
+        }
+    }
+
+    if (chosenAction) {
+        npc->execute_attack(*chosenAction, weakestHero);
+        return;
+    }
+
+    EnemyTurn(npc);
 }
 
 int Battle::CheckForWinLoss() {

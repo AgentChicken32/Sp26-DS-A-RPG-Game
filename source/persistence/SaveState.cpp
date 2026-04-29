@@ -39,6 +39,8 @@ std::string ToStatusName(StatusCondition status) {
         return "Poison";
     case StatusCondition::Burn:
         return "Burn";
+    case StatusCondition::Frozen:
+        return "Frozen";
     }
     return "None";
 }
@@ -46,6 +48,7 @@ std::string ToStatusName(StatusCondition status) {
 StatusCondition ParseStatusName(const std::string& name) {
     if (name == "Poison") return StatusCondition::Poison;
     if (name == "Burn") return StatusCondition::Burn;
+    if (name == "Frozen") return StatusCondition::Frozen;
     return StatusCondition::None;
 }
 
