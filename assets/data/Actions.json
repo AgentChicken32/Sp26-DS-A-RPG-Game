@@ -1,0 +1,108 @@
+[
+  {
+    "id": 1,
+    "name": "Slash",
+    "category": "Physical",
+    "accuracy": 100,
+    "manaCost": 0,
+    "effects": [
+      {
+        "type": "Damage",
+        "power": 15
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "name": "Fireball",
+    "category": "Magic",
+    "accuracy": 90,
+    "manaCost": 15,
+    "effects": [
+      {
+        "type": "Damage",
+        "power": 30
+      },
+      {
+        "type": "Status",
+        "statusCondition": "Burn",
+        "afflictionChance": 0.2
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "name": "Claw",
+    "category": "Physical",
+    "accuracy": 100,
+    "manaCost": 0,
+    "effects": [
+      {
+        "type": "Damage",
+        "power": 10
+      },
+      {
+        "type": "Status",
+        "statusCondition": "Poison",
+        "afflictionChance": 0.25
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "name": "Bite",
+    "category": "Physical",
+    "accuracy": 100,
+    "manaCost": 0,
+    "effects": [
+      {
+        "type": "Damage",
+        "power": 20
+      },
+      {
+        "type": "Status",
+        "statusCondition": "Poison",
+        "afflictionChance": 0.25
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "name": "Freeze",
+    "category": "Magic",
+    "accuracy": 100,
+    "manaCost": 10,
+    "effects": [
+      {
+        "type": "Damage",
+        "power": 20
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "name": "Tackle",
+    "category": "Physical",
+    "accuracy": 90,
+    "manaCost": 0,
+    "effects": [
+      {
+        "type": "Damage",
+        "power": 20
+      }
+    ]
+  },
+  {
+    "id": 69,
+    "name": "Secret Technique: Obliterate",
+    "category": "Physical",
+    "accuracy": 100,
+    "manaCost": 0,
+    "effects": [
+      {
+        "type": "Damage",
+        "power": 10000
+      }
+    ]
+  }
+]

@@ -13,20 +13,24 @@ if [ "$(uname -s)" = "Darwin" ]; then
 fi
 
 $compiler -std=c++20 \
-    source/ActionObject.cpp \
-    source/BattleClass.cpp \
-    source/DialogueTree.cpp \
-    source/Gambling.cpp \
-    source/GameItems.cpp \
-    source/Inventory.cpp \
-    source/LootTable.cpp \
-    source/Main.cpp \
-    source/RPG_T_Menu.cpp \
-    source/SaveState.cpp \
-    source/SceneClass.cpp \
-    source/Sound.cpp \
-    source/WorldMap.cpp \
-    source/character.cpp \
+    -Isource \
+    source/data/ActionObject.cpp \
+    source/world/AdventureFlow.cpp \
+    source/battle/BattleClass.cpp \
+    source/world/DialogueTree.cpp \
+    source/world/Gambling.cpp \
+    source/inventory/GameItems.cpp \
+    source/inventory/Inventory.cpp \
+    source/inventory/InventoryMenu.cpp \
+    source/battle/LootTable.cpp \
+    source/app/Main.cpp \
+    source/persistence/SaveState.cpp \
+    source/battle/SceneClass.cpp \
+    source/platform/Sound.cpp \
+    source/platform/UiCommon.cpp \
+    source/world/WorldUi.cpp \
+    source/world/WorldMap.cpp \
+    source/characters/character.cpp \
     $framework_flags \
     -o build/rpg-game
 
