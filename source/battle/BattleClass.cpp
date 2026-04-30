@@ -541,7 +541,7 @@ void Battle::SmartEnemyTurn(Character* npc) {
 
     ActionData* bestHeal = nullptr;
     for (auto& action : usableActions) {
-        if (HealingPower(action) > 0) {
+        if (HealingPower(action) > 0 && !ActionTargetsEnemy(action)) {
             if (!bestHeal || HealingPower(action) > HealingPower(*bestHeal)) {
                 bestHeal = &action;
             }

@@ -132,6 +132,7 @@ EncounterSpec MakeRegionEncounter(const AdventureState& adventure)
     encounter.opening_line =
         "Trouble finds you in " + std::string(region.name) +
         " as " + encounter.name + " steps into your path.";
+    stats.actions = GetEnemyActions(encounter.name);
     encounter.stats = stats;
 
     return encounter;

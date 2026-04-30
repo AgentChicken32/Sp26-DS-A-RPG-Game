@@ -1,6 +1,7 @@
 #include "world/WorldMap.h"
 
 #include <stdexcept>
+#include <unordered_map>
 
 namespace {
 
@@ -20,6 +21,7 @@ constexpr ExplorationItemProfile kDefaultFind{ "Potion", "Herb", 70 };
 constexpr ExplorationItemProfile kMountainFind{ "Iron Sword", "Potion", 35 };
 constexpr ExplorationItemProfile kPlainsFind{ "Training Dagger", "Herb", 35 };
 constexpr ExplorationItemProfile kSouthernFind{ "Herb", "Potion", 50 };
+constexpr std::array<int, 6> kDefaultEnemyActions = {{ 3, 4, 9, 7, 0, 0 }};
 
 const std::array<RegionId, kRegionCount> kAllRegions = BuildAllRegions();
 
@@ -196,6 +198,43 @@ const std::array<std::vector<RegionId>, kRegionCount> kRegionConnections = {{
 }};
 static_assert(kRegionConnections.size() == kRegionCount);
 
+const std::unordered_map<std::string, std::array<int, 6>> kEnemyActionSets = {
+    {"Frostbound Exile", {1, 10, 11, 0, 0, 0}},
+    {"Rime Wolf", {12, 13, 0, 0, 0, 0}},
+    {"Gelt Smuggler", {1, 14, 15, 0, 0, 0}},
+    {"Harbor Knifehand", {1, 14, 16, 0, 0, 0}},
+    {"Wildfang Stalker", {18, 9, 0, 0, 0, 0}},
+    {"Pinecloak Hunter", {6, 17, 0, 0, 0, 0}},
+    {"River Drake Whelp", {3, 19, 0, 0, 0, 0}},
+    {"Reedway Bandit", {1, 14, 0, 0, 0, 0}},
+    {"Bog Leech Alpha", {18, 9, 0, 0, 0, 0}},
+    {"Mudlands Marauder", {20, 2, 0, 0, 0, 0}},
+    {"Channel Cutthroat", {1, 14, 0, 0, 0, 0}},
+    {"Bridge Trollkin", {21, 22, 0, 0, 0, 0}},
+    {"Bramble Warden", {1, 23, 0, 0, 0, 0}},
+    {"Hollow Deer", {6, 24, 0, 0, 0, 0}},
+    {"Rune-Touched Raider", {1, 2, 5, 0, 0, 0}},
+    {"Stonecut Marauder", {20, 22, 0, 0, 0, 0}},
+    {"Clocktower Thief", {1, 6, 0, 0, 0, 0}},
+    {"Dockside Ruffian", {20, 14, 0, 0, 0, 0}},
+    {"Plains Skirmisher", {20, 16, 0, 0, 0, 0}},
+    {"Hoofstep Ambusher", {1, 21, 16, 0, 0, 0}},
+    {"Dustglass Viper", {18, 9, 0, 0, 0, 0}},
+    {"Coastline Reaver", {15, 16, 17, 14, 0, 0}},
+    {"Broken Sentinel", {2, 5, 9, 21, 0, 0}},
+    {"Tide Wraith", {13, 19, 0, 0, 0, 0}},
+    {"Saltbound Corsair", {1, 14, 15, 0, 0, 0}},
+    {"Sea-Glass Reaver", {15, 16, 17, 14, 0, 0}},
+    {"Spiral Cultist", {1, 25, 0, 0, 0, 0}},
+    {"Stormwake Harrier", {26, 13, 4, 27, 0, 0}},
+    {"Storm Roc", {26, 13, 4, 0, 0, 0}},
+    {"Cliffside Ravager", {20, 22, 14, 0, 0, 0}},
+    {"Blinker Wisp", {10, 2, 0, 0, 0, 0}},
+    {"Beacon Raider", {20, 22, 0, 0, 0, 0}},
+    {"Velvet Bouncer", {21, 69, 0, 0, 0, 0}},
+    {"Loaded Dice Enforcer", {69, 0, 0, 0, 0, 0}},
+};
+
 } // namespace
 
 AdventureState CreateNewAdventure() {
@@ -204,6 +243,15 @@ AdventureState CreateNewAdventure() {
     RefreshAllShopStock(adventure);
     MarkVisited(adventure, adventure.current_region);
     return adventure;
+}
+
+std::array<int, 6> GetEnemyActions(const std::string& name) {
+    const auto it = kEnemyActionSets.find(name);
+    if (it != kEnemyActionSets.end()) {
+        return it->second;
+    }
+
+    return kDefaultEnemyActions;
 }
 
 const RegionData& GetRegionData(RegionId id) {

@@ -287,11 +287,19 @@ void Character::execute_attack(ActionData action, Character* target) {
             //nor is this
             break;
         case Heal:
-            heal(effect.power);
-            std::cout << get_name() << " restored " << effect.power
-                      << " points of health! Health: "
-                      << get_health() << "/" << get_max_health()
-                      << std::endl;
+            if (effect.power >= 0) {
+                heal(effect.power);
+                std::cout << get_name() << " restored " << effect.power
+                          << " points of health! Health: "
+                          << get_health() << "/" << get_max_health()
+                          << std::endl;
+            } else {
+                take_damage(-effect.power);
+                std::cout << get_name() << " sacrificed "
+                          << (-effect.power) << " health! Health: "
+                          << get_health() << "/" << get_max_health()
+                          << std::endl;
+            }
             break;
         }
     }

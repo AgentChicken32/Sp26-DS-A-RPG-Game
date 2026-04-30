@@ -32,7 +32,7 @@
   },
   {
     "id": 3,
-    "name": "Claw",
+    "name": "Scratch",
     "category": "Physical",
     "accuracy": 100,
     "manaCost": 0,
@@ -142,10 +142,300 @@
     ]
   },
   {
+    "id": 10,
+    "name": "Icy Hand",
+    "category": "Physical",
+    "accuracy": 100,
+    "manaCost": 0,
+    "effects": [
+      {
+        "type": "Damage",
+        "power": 20
+      },
+      {
+        "type": "Status",
+        "statusCondition": "Frozen",
+        "afflictionChance": 0.1
+      }
+    ]
+  },
+  {
+    "id": 11,
+    "name": "Frost",
+    "category": "Magic",
+    "accuracy": 85,
+    "manaCost": 30,
+    "effects": [
+      {
+        "type": "Damage",
+        "power": 15
+      },
+      {
+        "type": "Status",
+        "statusCondition": "Frozen",
+        "afflictionChance": 0.25
+      }
+    ]
+  },
+  {
+    "id": 12,
+    "name": "Crunch",
+    "category": "Physical",
+    "accuracy": 90,
+    "manaCost": 0,
+    "effects": [
+      {
+        "type": "Damage",
+        "power": 30
+      },
+      {
+        "type": "Status",
+        "statusCondition": "Poison",
+        "afflictionChance": 0.25
+      }
+    ]
+  },
+  {
+    "id": 13,
+    "name": "Claw",
+    "category": "Physical",
+    "accuracy": 100,
+    "manaCost": 0,
+    "effects": [
+      {
+        "type": "Damage",
+        "power": 20
+      },
+      {
+        "type": "Status",
+        "statusCondition": "Poison",
+        "afflictionChance": 0.25
+      }
+    ]
+  },
+  {
+    "id": 14,
+    "name": "Alcohol",
+    "category": "Physical",
+    "accuracy": 90,
+    "manaCost": 0,
+    "effects": [
+      {
+        "type": "Heal",
+        "power": 12
+      }
+    ]
+  },
+  {
+    "id": 15,
+    "name": "Blunderbuss",
+    "category": "Physical",
+    "accuracy": 75,
+    "manaCost": 0,
+    "effects": [
+      {
+        "type": "Damage",
+        "power": 40
+      },
+      {
+        "type": "Status",
+        "statusCondition": "Burn",
+        "afflictionChance": 0.1
+      }
+    ]
+  },
+  {
+    "id": 16,
+    "name": "Flintlock",
+    "category": "Physical",
+    "accuracy": 90,
+    "manaCost": 0,
+    "effects": [
+      {
+        "type": "Damage",
+        "power": 25
+      },
+      {
+        "type": "Status",
+        "statusCondition": "Burn",
+        "afflictionChance": 0.1
+      }
+    ]
+  },
+  {
+    "id": 17,
+    "name": "Musket",
+    "category": "Physical",
+    "accuracy": 95,
+    "manaCost": 0,
+    "effects": [
+      {
+        "type": "Damage",
+        "power": 30
+      }
+    ]
+  },
+  {
+    "id": 18,
+    "name": "Fangs",
+    "category": "Physical",
+    "accuracy": 100,
+    "manaCost": 0,
+    "effects": [
+      {
+        "type": "Damage",
+        "power": 22
+      },
+      {
+        "type": "Status",
+        "statusCondition": "Poison",
+        "afflictionChance": 0.25
+      }
+    ]
+  },
+  {
+    "id": 19,
+    "name": "Waterfall",
+    "category": "Magic",
+    "accuracy": 100,
+    "manaCost": 20,
+    "effects": [
+      {
+        "type": "Damage",
+        "power": 30
+      }
+    ]
+  },
+  {
+    "id": 20,
+    "name": "Hack",
+    "category": "Physical",
+    "accuracy": 100,
+    "manaCost": 0,
+    "effects": [
+      {
+        "type": "Damage",
+        "power": 25
+      }
+    ]
+  },
+  {
+    "id": 21,
+    "name": "Smash",
+    "category": "Physical",
+    "accuracy": 95,
+    "manaCost": 0,
+    "effects": [
+      {
+        "type": "Damage",
+        "power": 25
+      }
+    ]
+  },
+  {
+    "id": 22,
+    "name": "Rock Throw",
+    "category": "Physical",
+    "accuracy": 85,
+    "manaCost": 0,
+    "effects": [
+      {
+        "type": "Damage",
+        "power": 30
+      }
+    ]
+  },
+  {
+    "id": 23,
+    "name": "Jungle's Wrath",
+    "category": "Magic",
+    "accuracy": 95,
+    "manaCost": 15,
+    "effects": [
+      {
+        "type": "Damage",
+        "power": 15
+      },
+      {
+        "type": "Heal",
+        "power": 10
+      }
+    ]
+  },
+  {
+    "id": 24,
+    "name": "Horn Thrust",
+    "category": "Physical",
+    "accuracy": 85,
+    "manaCost": 0,
+    "effects": [
+      {
+        "type": "Damage",
+        "power": 30
+      }
+    ]
+  },
+  {
+    "id": 25,
+    "name": "Sacrifice",
+    "category": "Magic",
+    "accuracy": 95,
+    "manaCost": 25,
+    "effects": [
+      {
+        "type": "Damage",
+        "power": 45
+      },
+      {
+        "type": "Heal",
+        "power": -15
+      }
+    ]
+  },
+  {
+    "id": 26,
+    "name": "Whirlwind",
+    "category": "Magic",
+    "accuracy": 95,
+    "manaCost": 20,
+    "effects": [
+      {
+        "type": "Damage",
+        "power": 5
+      },
+      {
+        "type": "Damage",
+        "power": 5
+      },
+      {
+        "type": "Damage",
+        "power": 5
+      }
+    ]
+  },
+  {
+    "id": 27,
+    "name": "Sky's Wrath",
+    "category": "Magic",
+    "accuracy": 50,
+    "manaCost": 30,
+    "effects": [
+      {
+        "type": "Damage",
+        "power": 50
+      },
+      {
+        "type": "Status",
+        "statusCondition": "Frozen",
+        "afflictionChance": 0.25
+      }
+    ]
+  },
+  {
     "id": 69,
     "name": "Secret Technique: Obliterate",
     "category": "Physical",
-    "accuracy": 100,
+    "accuracy": 5,
     "manaCost": 0,
     "effects": [
       {

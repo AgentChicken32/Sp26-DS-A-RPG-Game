@@ -83,6 +83,7 @@ struct RegionData {
     ExplorationItemProfile exploration_items{};
 };
 
+std::array<int, 6> GetEnemyActions(const std::string& name);
 AdventureState CreateNewAdventure();
 const RegionData& GetRegionData(RegionId id);
 const RegionShopData& GetRegionShopData(RegionId id);

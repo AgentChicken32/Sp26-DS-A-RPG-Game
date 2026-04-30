@@ -127,13 +127,15 @@ ActionData GetAction(int id) {
 }
 
 int GetDamage(const ActionData& action) {
+	int totalDamage = 0;
+
 	for (const auto& effect : action.effects) {
 		if (effect.type == EffectType::Damage) {
-			return effect.power;
+			totalDamage += effect.power;
 		}
 	}
 
-	return 0;
+	return totalDamage;
 }
 
 double CheckIfStatus(const ActionData& action) {
